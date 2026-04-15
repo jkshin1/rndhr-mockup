@@ -12,15 +12,18 @@
   "dependencies": {
     "ag-grid-community": "^35.2.1",
     "ag-grid-react": "^35.2.1",
+    "antd": "^6.3.5",
     "highcharts": "^12.6.0",
     "highcharts-react-official": "^3.2.3",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "styled-components": "^6.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/styled-components": "^5.1.36",
     "@vitejs/plugin-react": "^4.3.3",
     "eslint": "^9.13.0",
     "eslint-plugin-react-hooks": "^5.0.0",
