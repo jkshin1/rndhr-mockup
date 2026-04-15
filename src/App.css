@@ -1,0 +1,1377 @@
+/* ── Layout ──────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header__symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #c62828;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.5px;
+}
+
+.header__titles h1 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.header__sub {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.header__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.header__dot {
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.left-panel {
+  width: 380px;
+  min-width: 380px;
+  border-right: 1px solid #e2e8f0;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.right-panel {
+  flex: 1;
+  overflow-y: auto;
+  background: #f0f2f5;
+  padding: 24px;
+}
+
+/* ── TF Request Panel ───────────────────────────────── */
+
+.tf-panel {
+  padding: 24px;
+}
+
+.tf-panel__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.tf-panel__subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 4px 0 20px;
+}
+
+.tf-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tf-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.tf-card:hover {
+  border-color: #93c5fd;
+  background: #f0f7ff;
+}
+
+.tf-card--active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.tf-card__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.tf-card__size {
+  font-size: 12px;
+  color: #6b7280;
+  background: #f1f5f9;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+.tf-card--active .tf-card__size {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+/* ── TF Detail ──────────────────────────────────────── */
+
+.tf-detail {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.tf-detail__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.tf-detail__desc {
+  font-size: 13px;
+  color: #4b5563;
+  margin: 8px 0 16px;
+  line-height: 1.6;
+}
+
+.tf-detail__roles-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+/* ── 직무별 필요 역량 그룹 ───────────────────────────── */
+
+.comp-group {
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 1px solid transparent;
+}
+
+.comp-group--soja {
+  border-color: #bfdbfe;
+  background: #f0f6ff;
+}
+
+.comp-group--gongjeong {
+  border-color: #fde68a;
+  background: #fffbf0;
+}
+
+.comp-group__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+}
+
+.comp-group--soja .comp-group__header  { background: #dbeafe; }
+.comp-group--gongjeong .comp-group__header { background: #fef3c7; }
+
+.comp-group__label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.comp-group--soja .comp-group__label  { color: #1d4ed8; }
+.comp-group--gongjeong .comp-group__label { color: #92400e; }
+
+.comp-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.comp-item {
+  padding: 9px 12px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.comp-item__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.comp-item__subjob {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.comp-item__career {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f1f5f9;
+  padding: 1px 7px;
+  border-radius: 8px;
+}
+
+.comp-item__resp {
+  font-size: 11px;
+  color: #4b5563;
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+.comp-item__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.skill-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #e0e7ff;
+  color: #3730a3;
+  border-radius: 4px;
+}
+
+.btn-recommend {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.btn-recommend:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* ── Empty / Loading States ─────────────────────────── */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-state__icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+}
+
+.loading__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading p {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* ── Recommendation Panel ───────────────────────────── */
+
+.rec-panel__header {
+  margin-bottom: 24px;
+}
+
+.rec-panel__header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.rec-panel__header p {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.rec-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.rec-section__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 16px;
+}
+
+/* ── Role Recommendation ────────────────────────────── */
+
+.role-rec {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.role-rec:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.role-rec__label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.role-rec__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.role-rec__need {
+  font-size: 12px;
+  color: #2563eb;
+  background: #dbeafe;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.role-rec__candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Candidate Card ─────────────────────────────────── */
+
+.candidate-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  transition: all 0.15s;
+}
+
+.candidate-card--primary {
+  border-color: #bfdbfe;
+  background: #fafbff;
+}
+
+.candidate-card--alt {
+  border-color: #e5e7eb;
+  background: #fafafa;
+  padding: 10px 16px;
+}
+
+.candidate-card__info {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.candidate-card__avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.candidate-card__avatar--alt {
+  background: #9ca3af;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  font-size: 12px;
+}
+
+.candidate-card__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.candidate-card__meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.candidate-card__spec {
+  font-size: 12px;
+  color: #4b5563;
+  margin-top: 4px;
+}
+
+.candidate-card__projects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.project-tag {
+  font-size: 11px;
+  padding: 1px 8px;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 4px;
+}
+
+.candidate-card__score {
+  margin-left: auto;
+  position: relative;
+  width: 56px;
+  min-width: 56px;
+  text-align: center;
+}
+
+.score-ring {
+  width: 56px;
+  height: 56px;
+  transform: rotate(-90deg);
+}
+
+.score-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.score-text--alt {
+  position: static;
+  transform: none;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+/* ── Alternative Section ────────────────────────────── */
+
+.alt-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.alt-section__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.alt-section .candidate-card + .candidate-card {
+  margin-top: 6px;
+}
+
+/* ── Two-column chart row ───────────────────────────── */
+
+.rec-charts-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.rec-section--half {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 20px;
+}
+
+/* ── TF Competency Chart ────────────────────────────── */
+
+.tf-competency {
+  width: 100%;
+}
+
+.competency-gap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.competency-gap__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9a3412;
+  white-space: nowrap;
+}
+
+.competency-gap__item {
+  font-size: 11px;
+  color: #c2410c;
+  background: #ffedd5;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.competency-gap__item strong {
+  color: #dc2626;
+}
+
+/* ── CL 직급 뱃지 ────────────────────────────────────── */
+
+.cl-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 8px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.cl-badge--cl5 { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+.cl-badge--cl4 { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.cl-badge--cl3 { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+/* ── Job tag pills (중직무/하위직무) ─────────────────── */
+
+.candidate-card__job-tags {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0 6px;
+}
+
+.job-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.job-tag--middle {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.job-tag--sub {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.candidate-card__body {
+  flex: 1;
+}
+
+/* ── Job Distribution Chart ─────────────────────────── */
+
+.job-dist__summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.job-dist__badge {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.job-dist__badge span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.job-dist__badge strong {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.job-dist__badge small {
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.job-dist__badge--soja {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.job-dist__badge--gongjeong {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.job-dist__badge--total {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* ── Distribution Preview (before recommend) ────────── */
+
+.dist-preview {
+  height: 100%;
+}
+
+.dist-preview__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.dist-preview__header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e3a5f;
+}
+
+.dist-preview__total {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  background: #dbeafe;
+  padding: 3px 12px;
+  border-radius: 12px;
+}
+
+/* ── Risk Analysis Section ──────────────────────────── */
+
+.rec-section__sub {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: -10px 0 14px;
+}
+
+.risk-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 요약 카드 row */
+.risk-summary {
+  display: flex;
+  gap: 10px;
+}
+
+.risk-summary__card {
+  flex: 1;
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.risk-summary__count {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.risk-summary__label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* 리스크 테이블 */
+.risk-table {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.risk-table__head {
+  display: grid;
+  grid-template-columns: 140px 90px 80px 80px 80px 80px 1fr;
+  padding: 9px 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.risk-table__center { text-align: center; }
+
+.risk-table__row {
+  display: grid;
+  grid-template-columns: 140px 90px 80px 80px 80px 80px 1fr;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  gap: 0;
+}
+
+.risk-table__row:last-child { border-bottom: none; }
+
+.risk-table__subjob {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.risk-mj {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.risk-mj--soja  { background: #dbeafe; color: #1d4ed8; }
+.risk-mj--gong  { background: #fef3c7; color: #92400e; }
+
+.risk-table__level {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.risk-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.risk-table__num {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.risk-gap {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.risk-gap--neg { color: #dc2626; }
+.risk-gap--ok  { color: #16a34a; }
+
+.risk-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.action-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.action-pill--hire  { background: #ede9fe; color: #5b21b6; }
+.action-pill--coach { background: #e0f2fe; color: #0369a1; }
+.action-pill--ok    { background: #dcfce7; color: #15803d; }
+
+/* 종합 권고 조치 */
+.risk-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.risk-action-card {
+  flex: 1;
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+
+.risk-action-card--hire {
+  background: #faf5ff;
+  border-color: #e9d5ff;
+}
+
+.risk-action-card--coach {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.risk-action-card__icon {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.risk-action-card__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 4px;
+}
+
+.risk-action-card__desc {
+  font-size: 12px;
+  color: #4b5563;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.risk-action-card__jobs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.risk-action-card__tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 8px;
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.risk-action-card__tag--coach {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* ── Function 조직 영향 분석 ─────────────────────────── */
+
+.func-impact {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.func-summary {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.func-summary__card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.func-summary__value {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.func-summary__label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.func-bars {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.func-bars__legend {
+  display: flex;
+  gap: 22px;
+  font-size: 12px;
+  color: #475569;
+  padding-bottom: 14px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.func-bars__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.func-legend-box {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.func-legend-box--remain {
+  background: linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+}
+
+.func-legend-box--pulled {
+  background: #64748b;
+}
+
+.func-legend-min {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: #0f172a;
+  position: relative;
+}
+
+.func-legend-min::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -3px;
+  width: 8px;
+  height: 3px;
+  background: #0f172a;
+}
+
+.func-bar-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 240px;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 0 10px;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+.func-bar-row:last-child {
+  border-bottom: none;
+}
+
+.func-bar-row__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.func-bar-row__label strong {
+  font-size: 14px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.func-mid-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  width: fit-content;
+  letter-spacing: 0.02em;
+}
+
+.func-mid-badge--td {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.func-mid-badge--gong {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.func-risk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.func-risk-chip i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.func-bar-row__bar {
+  position: relative;
+  height: 30px;
+  margin-top: 14px;
+}
+
+.func-bar-row__track {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.func-bar-row__remain {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  transition: width 0.4s ease;
+}
+
+.func-bar-row__remain--low {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
+.func-bar-row__remain--medium {
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+}
+
+.func-bar-row__remain--high {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+}
+
+.func-bar-row__pulled {
+  background: repeating-linear-gradient(
+    135deg,
+    #64748b,
+    #64748b 6px,
+    #475569 6px,
+    #475569 12px
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  transition: width 0.4s ease;
+}
+
+.func-bar-row__min-line {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 2px;
+  background: #0f172a;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.func-bar-row__min-line::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 8px;
+  height: 3px;
+  background: #0f172a;
+}
+
+.func-bar-row__min-label {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  background: #fff;
+  padding: 0 4px;
+}
+
+.func-bar-row__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.func-bar-row__flow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.func-bar-row__flow strong {
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.func-bar-row__arrow {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.func-bar-row__delta {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.func-bar-row__gap {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.func-bar-row__gap--low   { color: #15803d; }
+.func-bar-row__gap--medium{ color: #b45309; }
+.func-bar-row__gap--high  { color: #be123c; }
+
+.func-bar-row__comp {
+  color: #64748b;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.func-bar-row__comp-drop {
+  color: #be123c;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.func-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.func-action-card {
+  display: flex;
+  gap: 14px;
+  border-radius: 10px;
+  padding: 16px 18px;
+  border: 1px solid;
+  border-left-width: 4px;
+}
+
+.func-action-card--high {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  border-left-color: #ef4444;
+}
+
+.func-action-card--medium {
+  background: #fffbeb;
+  border-color: #fde68a;
+  border-left-color: #f59e0b;
+}
+
+.func-action-card__icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.func-action-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.func-action-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.func-action-card--high .func-action-card__title { color: #7f1d1d; }
+.func-action-card--medium .func-action-card__title { color: #78350f; }
+
+.func-action-card__desc {
+  font-size: 13px;
+  color: #475569;
+}
+
+.func-action-card__desc strong {
+  color: inherit;
+}
+
+.func-action-card--high .func-action-card__desc strong  { color: #be123c; }
+.func-action-card--medium .func-action-card__desc strong{ color: #b45309; }
+
+.func-action-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.func-action-card__list--compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.func-action-card__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid #fecdd3;
+  border-radius: 6px;
+}
+
+.func-action-card__tag {
+  font-size: 12px;
+  color: #7f1d1d;
+  white-space: nowrap;
+}
+
+.func-action-card__tag strong {
+  color: #be123c;
+  font-weight: 700;
+}
+
+.func-action-card__tag--medium {
+  background: #fff;
+  border: 1px solid #fde68a;
+  color: #78350f;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.func-action-card__msg {
+  color: #475569;
+  font-size: 12px;
+  flex: 1;
+  line-height: 1.5;
+}
+
+@media (max-width: 1280px) {
+  .func-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .func-bar-row {
+    grid-template-columns: 130px 1fr 210px;
+    gap: 12px;
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────── */
+
+.left-panel::-webkit-scrollbar,
+.right-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.left-panel::-webkit-scrollbar-thumb,
+.right-panel::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
