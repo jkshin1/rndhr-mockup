@@ -290,7 +290,7 @@ const ReqTableRow = styled.div`
   grid-template-columns: 160px 1fr 140px 160px;
   padding: 16px 20px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight};
-  align-items: center;
+  align-items: start;
   background: #fff;
   transition: background 0.1s;
 
@@ -329,7 +329,20 @@ const ScoreRow = styled.div`
   gap: 6px;
 `;
 
+const ScoreDot = styled.span<{ $score: number }>`
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: ${({ $score }) =>
+    $score >= 80 ? '#16a34a' : $score >= 65 ? '#d97706' : '#dc2626'};
+`;
+
 const ScoreLabel = styled.div<{ $score: number }>`
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
   font-weight: 700;
   color: ${({ $score }) =>
@@ -800,7 +813,7 @@ export default function OrgSetupWizard({ onComplete }: Props) {
                     )}
                   </ReqJobName>
                   <ReqJobDesc>{dj.description}</ReqJobDesc>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 2 }}>
                     <StyledInputNumber
                       min={1} max={200}
                       value={req.headcount}
@@ -809,7 +822,7 @@ export default function OrgSetupWizard({ onComplete }: Props) {
                       style={{ width: 110 }}
                     />
                   </div>
-                  <ScoreRow style={{ alignItems: 'center' }}>
+                  <ScoreRow style={{ alignItems: 'flex-start' }}>
                     <StyledInputNumber
                       min={0} max={100}
                       value={req.targetScore}
@@ -818,7 +831,8 @@ export default function OrgSetupWizard({ onComplete }: Props) {
                       style={{ width: 130 }}
                     />
                     <ScoreLabel $score={req.targetScore}>
-                      {req.targetScore >= 80 ? '🟢 고역량' : req.targetScore >= 65 ? '🟡 중역량' : '🔴 기본'}
+                      <ScoreDot $score={req.targetScore} />
+                      {req.targetScore >= 80 ? '고역량' : req.targetScore >= 65 ? '중역량' : '기본'}
                       {' '}({req.targetScore}점)
                     </ScoreLabel>
                     <ScoreBar $score={req.targetScore} />
