@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Steps, Button, InputNumber, Checkbox, Tooltip } from 'antd';
+import { useState, useCallback } from 'react';
+import { Steps, Button, InputNumber, Checkbox, Tooltip, Spin } from 'antd';
 import styled from 'styled-components';
 import {
   getSubJobsByMiddle,
@@ -10,6 +10,8 @@ import {
   type OrgSetupResult,
   type DetailJobRequirement,
 } from '../../data/orgSetupData';
+import { generateOrgSimulation, type OrgSetupSimResult } from '../../data/orgSetupSimulation';
+import OrgSetupResultPanel from './OrgSetupResultPanel';
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -456,6 +458,8 @@ export default function OrgSetupWizard({ onComplete }: Props) {
   const [requirements, setRequirements] = useState<Record<string, RequirementInput>>({});
   const [completed, setCompleted] = useState(false);
   const [result, setResult] = useState<OrgSetupResult | null>(null);
+  const [simulating, setSimulating] = useState(false);
+  const [simResult, setSimResult] = useState<OrgSetupSimResult | null>(null);
 
   const subJobDefs   = middleJob ? getSubJobsByMiddle(middleJob) : [];
   const subJobDef    = subJob ? getSubJobDef(subJob) : null;
@@ -514,12 +518,47 @@ export default function OrgSetupWizard({ onComplete }: Props) {
     onComplete?.(r);
   };
 
+  const handleRunSimulation = useCallback(() => {
+    if (!result) return;
+    setSimulating(true);
+    // Simulate a brief loading period for UX
+    setTimeout(() => {
+      const sim = generateOrgSimulation(result);
+      setSimResult(sim);
+      setSimulating(false);
+    }, 1200);
+  }, [result]);
+
   const handleReset = () => {
     setStep(0); setMiddleJob(null); setSubJob(null);
     setSelectedDetailIds([]); setRequirements({}); setCompleted(false); setResult(null);
+    setSimResult(null); setSimulating(false);
   };
 
-  /* ── 완료 화면 ── */
+  /* ── 시뮬레이션 결과 화면 ── */
+  if (completed && result && simResult) {
+    return <OrgSetupResultPanel result={simResult} setupInput={result} onReset={handleReset} />;
+  }
+
+  /* ── 시뮬레이션 로딩 화면 ── */
+  if (completed && result && simulating) {
+    return (
+      <Wizard>
+        <StepsBar current={4} items={STEPS_CONFIG} />
+        <StepCard>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '60px 0' }}>
+            <Spin size="large" />
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#1e3a5f' }}>인력 배치 시뮬레이션 분석 중...</div>
+            <div style={{ fontSize: 13, color: '#94a3b8' }}>
+              구성원 역량, 경력, 조직 리스크를 종합 분석하고 있습니다
+            </div>
+          </div>
+        </StepCard>
+      </Wizard>
+    );
+  }
+
+  /* ── 완료 요약 화면 (시뮬레이션 전) ── */
   if (completed && result) {
     return (
       <Wizard>
@@ -582,8 +621,10 @@ export default function OrgSetupWizard({ onComplete }: Props) {
 
             <NavRow>
               <Button onClick={handleReset}>처음부터 다시</Button>
-              <Button type="primary" size="large" style={{ background: '#1e3a5f', borderColor: '#1e3a5f', paddingLeft: 32, paddingRight: 32 }}>
-                🔍 인력 추천 시뮬레이션 시작 (준비 중)
+              <Button type="primary" size="large"
+                style={{ background: '#1e3a5f', borderColor: '#1e3a5f', paddingLeft: 32, paddingRight: 32 }}
+                onClick={handleRunSimulation}>
+                🔍 인력 배치 시뮬레이션 시작
               </Button>
             </NavRow>
           </SummaryWrap>
