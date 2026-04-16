@@ -274,7 +274,8 @@ const RequirementsTable = styled.div`
 
 const ReqTableHead = styled.div`
   display: grid;
-  grid-template-columns: 160px 1fr 140px 160px;
+  grid-template-columns: 160px 1fr 140px 180px;
+  column-gap: 16px;
   padding: 12px 20px;
   background: #f8fafc;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
@@ -287,7 +288,8 @@ const ReqTableHead = styled.div`
 
 const ReqTableRow = styled.div`
   display: grid;
-  grid-template-columns: 160px 1fr 140px 160px;
+  grid-template-columns: 160px 1fr 140px 180px;
+  column-gap: 16px;
   padding: 16px 20px;
   border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight};
   align-items: start;
@@ -813,7 +815,7 @@ export default function OrgSetupWizard({ onComplete }: Props) {
                     )}
                   </ReqJobName>
                   <ReqJobDesc>{dj.description}</ReqJobDesc>
-                  <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 2 }}>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <StyledInputNumber
                       min={1} max={200}
                       value={req.headcount}
