@@ -913,14 +913,97 @@ function CareerDevCard({ dev }: { dev: CareerDevelopment }) {
   );
 }
 
+// ── Collapsible Section ──────────────────────────────────────
+
+const CollapsibleSection = styled.div`
+  background: #fff;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+  box-shadow: ${({ theme }) => theme.shadows.card};
+  overflow: hidden;
+`;
+
+const CollapseToggle = styled.button<{ $open: boolean }>`
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 28px;
+  background: ${({ $open }) => $open ? '#f8faff' : '#fff'};
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+
+  &:hover { background: #f8faff; }
+`;
+
+const CollapseToggleLeft = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const CollapseToggleSummaryRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+`;
+
+const SummaryChip = styled.span<{ $color?: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: ${({ $color }) => $color ? `${$color}15` : '#f1f5f9'};
+  color: ${({ $color }) => $color ?? '#475569'};
+  border: 1px solid ${({ $color }) => $color ? `${$color}40` : '#e2e8f0'};
+`;
+
+const CollapseChevron = styled.span<{ $open: boolean }>`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  transition: transform 0.22s;
+  transform: rotate(${({ $open }) => ($open ? '180deg' : '0deg')});
+  margin-top: 3px;
+  flex-shrink: 0;
+`;
+
+const CollapseBody = styled.div`
+  padding: 0 28px 24px;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  background: #fff;
+`;
+
 // ── Main Component ───────────────────────────────────────────
 
 export default function OrgSetupResultPanel({ result, setupInput, onReset }: Props) {
   const { summary } = result;
+  const [hireDevOpen, setHireDevOpen] = useState(false);
+  const [careerOpen, setCareerOpen] = useState(false);
 
   const highTeams = result.sourceTeamImpacts.filter((t) => t.riskLevel === 'high').length;
   const mediumTeams = result.sourceTeamImpacts.filter((t) => t.riskLevel === 'medium').length;
   const lowTeams = result.sourceTeamImpacts.filter((t) => t.riskLevel === 'low').length;
+
+  // Pre-compute summary stats for collapsed states
+  const totalHiringCount = result.hiringRecommendations.reduce((s, r) => s + r.count, 0);
+  const hiringJobCount = result.hiringRecommendations.length;
+  const devCount = result.developmentRecommendations.length;
+  const devTimeframes = result.developmentRecommendations.map((d) => d.timeframe);
+  const shortTermDev = devTimeframes.filter((t) => t.includes('1~3') || t.includes('3~6')).length;
+  const longTermDev = devTimeframes.filter((t) => t.includes('6~12') || t.includes('9~12')).length;
+
+  const careerCL = { CL3: 0, CL4: 0, CL5: 0 };
+  result.careerDevelopments.forEach((c) => { careerCL[c.cl]++; });
+  const avgDevAreas = result.careerDevelopments.length > 0
+    ? Math.round(result.careerDevelopments.reduce((s, c) => s + c.developmentAreas.length, 0) / result.careerDevelopments.length)
+    : 0;
 
   return (
     <Panel>
@@ -1068,58 +1151,7 @@ export default function OrgSetupResultPanel({ result, setupInput, onReset }: Pro
         </SectionBody>
       </Section>
 
-      {/* ── 6. Hiring / Development Recommendations ── */}
-      <Section>
-        <SectionTitle>채용 &middot; 육성 의사결정 지원</SectionTitle>
-        <SectionSub>시뮬레이션 결과에 기반한 채용 및 육성 권고안</SectionSub>
-        <ActionCards>
-          {result.hiringRecommendations.length > 0 && (
-            <ActionCard $type="hire">
-              <ActionCardIcon>&#x1F4CB;</ActionCardIcon>
-              <ActionCardBody>
-                <ActionCardTitle $type="hire">신규 채용 필요</ActionCardTitle>
-                <ActionCardDesc>
-                  <strong>{result.hiringRecommendations.length}개 직무</strong>에서 총{' '}
-                  <strong>{result.hiringRecommendations.reduce((s, r) => s + r.count, 0)}명</strong> 채용 필요
-                </ActionCardDesc>
-                <ActionList>
-                  {result.hiringRecommendations.map((hr) => (
-                    <ActionItem key={hr.detailJobName} $type="hire">
-                      <ActionItemLabel $type="hire">
-                        {hr.detailJobName} ({hr.count}명)
-                      </ActionItemLabel>
-                      <ActionItemDesc>{hr.reason}</ActionItemDesc>
-                    </ActionItem>
-                  ))}
-                </ActionList>
-              </ActionCardBody>
-            </ActionCard>
-          )}
-          {result.developmentRecommendations.length > 0 && (
-            <ActionCard $type="coach">
-              <ActionCardIcon>&#x1F4DA;</ActionCardIcon>
-              <ActionCardBody>
-                <ActionCardTitle $type="coach">구성원 육성 필요</ActionCardTitle>
-                <ActionCardDesc>
-                  <strong>{result.developmentRecommendations.length}명</strong>의 구성원에게 역량 육성 프로그램 필요
-                </ActionCardDesc>
-                <ActionList>
-                  {result.developmentRecommendations.map((dr) => (
-                    <ActionItem key={`${dr.candidateName}-${dr.area}`} $type="coach">
-                      <ActionItemLabel $type="coach">
-                        {dr.candidateName} &middot; {dr.area}
-                      </ActionItemLabel>
-                      <ActionItemDesc>{dr.plan} ({dr.timeframe})</ActionItemDesc>
-                    </ActionItem>
-                  ))}
-                </ActionList>
-              </ActionCardBody>
-            </ActionCard>
-          )}
-        </ActionCards>
-      </Section>
-
-      {/* ── 7. Competency Gap ── */}
+      {/* ── 6. Competency Gap (역량 Gap 분석 — 채용·육성 위) ── */}
       <Section>
         <SectionTitle>역량 Gap 분석 및 육성 제안</SectionTitle>
         <SectionSub>필요 역량과 현재 구성원 역량 차이 분석</SectionSub>
@@ -1156,16 +1188,124 @@ export default function OrgSetupResultPanel({ result, setupInput, onReset }: Pro
         </GapTable>
       </Section>
 
-      {/* ── 8. Career Development ── */}
-      <Section>
-        <SectionTitle>개별 구성원 Career 개발 제안</SectionTitle>
-        <SectionSub>R&D 방향에 align된 맞춤형 성장 경로 제안</SectionSub>
-        <SectionBody>
-          {result.careerDevelopments.map((dev) => (
-            <CareerDevCard key={dev.candidateId} dev={dev} />
-          ))}
-        </SectionBody>
-      </Section>
+      {/* ── 7. Hiring / Development Recommendations (Collapsible) ── */}
+      <CollapsibleSection>
+        <CollapseToggle $open={hireDevOpen} onClick={() => setHireDevOpen((v) => !v)}>
+          <CollapseToggleLeft>
+            <SectionTitle style={{ margin: 0 }}>채용 &middot; 육성 의사결정 지원</SectionTitle>
+            <SectionSub style={{ margin: 0 }}>시뮬레이션 결과에 기반한 채용 및 육성 권고안</SectionSub>
+            {!hireDevOpen && (
+              <CollapseToggleSummaryRow>
+                {hiringJobCount > 0 && (
+                  <SummaryChip $color="#ef4444">
+                    📋 신규 채용 {hiringJobCount}개 직무 · {totalHiringCount}명
+                  </SummaryChip>
+                )}
+                {devCount > 0 && (
+                  <SummaryChip $color="#2563eb">
+                    📚 육성 필요 {devCount}명
+                  </SummaryChip>
+                )}
+                {shortTermDev > 0 && (
+                  <SummaryChip $color="#16a34a">
+                    단기({shortTermDev}명) 6개월 이내
+                  </SummaryChip>
+                )}
+                {longTermDev > 0 && (
+                  <SummaryChip $color="#b45309">
+                    장기({longTermDev}명) 6개월 이상
+                  </SummaryChip>
+                )}
+              </CollapseToggleSummaryRow>
+            )}
+          </CollapseToggleLeft>
+          <CollapseChevron $open={hireDevOpen}>&#9660;</CollapseChevron>
+        </CollapseToggle>
+        {hireDevOpen && (
+          <CollapseBody>
+            <ActionCards style={{ paddingTop: 20 }}>
+              {result.hiringRecommendations.length > 0 && (
+                <ActionCard $type="hire">
+                  <ActionCardIcon>&#x1F4CB;</ActionCardIcon>
+                  <ActionCardBody>
+                    <ActionCardTitle $type="hire">신규 채용 필요</ActionCardTitle>
+                    <ActionCardDesc>
+                      <strong>{hiringJobCount}개 직무</strong>에서 총{' '}
+                      <strong>{totalHiringCount}명</strong> 채용 필요
+                    </ActionCardDesc>
+                    <ActionList>
+                      {result.hiringRecommendations.map((hr) => (
+                        <ActionItem key={hr.detailJobName} $type="hire">
+                          <ActionItemLabel $type="hire">
+                            {hr.detailJobName} ({hr.count}명)
+                          </ActionItemLabel>
+                          <ActionItemDesc>{hr.reason}</ActionItemDesc>
+                        </ActionItem>
+                      ))}
+                    </ActionList>
+                  </ActionCardBody>
+                </ActionCard>
+              )}
+              {result.developmentRecommendations.length > 0 && (
+                <ActionCard $type="coach">
+                  <ActionCardIcon>&#x1F4DA;</ActionCardIcon>
+                  <ActionCardBody>
+                    <ActionCardTitle $type="coach">구성원 육성 필요</ActionCardTitle>
+                    <ActionCardDesc>
+                      <strong>{devCount}명</strong>의 구성원에게 역량 육성 프로그램 필요
+                    </ActionCardDesc>
+                    <ActionList>
+                      {result.developmentRecommendations.map((dr) => (
+                        <ActionItem key={`${dr.candidateName}-${dr.area}`} $type="coach">
+                          <ActionItemLabel $type="coach">
+                            {dr.candidateName} &middot; {dr.area}
+                          </ActionItemLabel>
+                          <ActionItemDesc>{dr.plan} ({dr.timeframe})</ActionItemDesc>
+                        </ActionItem>
+                      ))}
+                    </ActionList>
+                  </ActionCardBody>
+                </ActionCard>
+              )}
+            </ActionCards>
+          </CollapseBody>
+        )}
+      </CollapsibleSection>
+
+      {/* ── 8. Career Development (Collapsible) ── */}
+      <CollapsibleSection>
+        <CollapseToggle $open={careerOpen} onClick={() => setCareerOpen((v) => !v)}>
+          <CollapseToggleLeft>
+            <SectionTitle style={{ margin: 0 }}>개별 구성원 Career 개발 제안</SectionTitle>
+            <SectionSub style={{ margin: 0 }}>R&D 방향에 align된 맞춤형 성장 경로 제안</SectionSub>
+            {!careerOpen && (
+              <CollapseToggleSummaryRow>
+                <SummaryChip $color="#1e3a5f">
+                  👥 총 {result.careerDevelopments.length}명 개발 계획
+                </SummaryChip>
+                {careerCL.CL5 > 0 && <SummaryChip $color="#7e22ce">CL5 · {careerCL.CL5}명</SummaryChip>}
+                {careerCL.CL4 > 0 && <SummaryChip $color="#c2410c">CL4 · {careerCL.CL4}명</SummaryChip>}
+                {careerCL.CL3 > 0 && <SummaryChip $color="#0369a1">CL3 · {careerCL.CL3}명</SummaryChip>}
+                {avgDevAreas > 0 && (
+                  <SummaryChip $color="#16a34a">
+                    평균 {avgDevAreas}개 역량 개발 영역
+                  </SummaryChip>
+                )}
+              </CollapseToggleSummaryRow>
+            )}
+          </CollapseToggleLeft>
+          <CollapseChevron $open={careerOpen}>&#9660;</CollapseChevron>
+        </CollapseToggle>
+        {careerOpen && (
+          <CollapseBody>
+            <SectionBody style={{ paddingTop: 20 }}>
+              {result.careerDevelopments.map((dev) => (
+                <CareerDevCard key={dev.candidateId} dev={dev} />
+              ))}
+            </SectionBody>
+          </CollapseBody>
+        )}
+      </CollapsibleSection>
 
       {/* ── 9. Bottom Nav ── */}
       <BottomNav>
