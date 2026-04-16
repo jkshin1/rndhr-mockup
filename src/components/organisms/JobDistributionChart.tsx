@@ -49,10 +49,10 @@ export default function JobDistributionChart({ template, compact }: Props) {
   const data = sorted.map((d) => ({ y: d.count, color: COLOR_MAP[d.subJob] ?? '#94a3b8' }));
   const sojaTotal = sorted.filter((d) => d.middleJob === '소자').reduce((s, d) => s + d.count, 0);
   const gongTotal = sorted.filter((d) => d.middleJob === '공정').reduce((s, d) => s + d.count, 0);
-  const height = compact ? 280 : 340;
+  const height = compact ? 300 : 360;
 
   const options: Highcharts.Options = {
-    chart: { type: 'bar', height, margin: compact ? [8, 70, 20, 110] : [20, 80, 20, 110], animation: false },
+    chart: { type: 'bar', height, margin: compact ? [8, 70, 48, 120] : [20, 80, 56, 120], animation: false },
     title: { text: undefined },
     xAxis: {
       categories,
@@ -66,7 +66,7 @@ export default function JobDistributionChart({ template, compact }: Props) {
       ],
       plotLines: [{ value: 2.5, color: '#cbd5e1', width: 1, dashStyle: 'Dot' }],
     },
-    yAxis: { min: 0, title: { text: undefined }, labels: { style: { fontSize: '10px' } } },
+    yAxis: { min: 0, title: { text: undefined }, labels: { style: { fontSize: '10px' }, y: 14 }, tickPixelInterval: 50 },
     legend: { enabled: false },
     tooltip: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
