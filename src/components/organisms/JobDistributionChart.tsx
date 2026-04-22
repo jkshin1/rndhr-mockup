@@ -1,14 +1,24 @@
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import styled from 'styled-components';
-import type { TFTemplate } from '../../data/mockData';
+import { getMiddleJobBySubJob, getOrderedTfSubJobs, type TFTemplate } from '../../data/mockData';
 
-const ORDER = ['PI', 'Device', 'FA', 'Photo공정', 'Etch공정', 'Diffusion공정', 'ThinFilm공정', 'C&C공정'];
 const COLOR_MAP: Record<string, string> = {
   PI: '#1d4ed8', Device: '#2563eb', FA: '#60a5fa',
   'Photo공정': '#b45309', 'Etch공정': '#d97706', 'Diffusion공정': '#f59e0b',
   'ThinFilm공정': '#fbbf24', 'C&C공정': '#fed7aa',
 };
+
+function getDistributionColor(subJob: string, middleJob: string, index: number): string {
+  const known = COLOR_MAP[subJob];
+  if (known) return known;
+
+  const customSoja = ['#0284c7', '#0ea5e9', '#38bdf8'];
+  const customProcess = ['#ea580c', '#f97316', '#fb923c'];
+  const palette = middleJob === '공정' ? customProcess : customSoja;
+
+  return palette[index % palette.length];
+}
 
 const Wrap = styled.div``;
 
@@ -41,15 +51,27 @@ interface Props {
 
 export default function JobDistributionChart({ template, compact }: Props) {
   const { jobDistribution, totalHeadcount } = template;
-  const sorted = ORDER.map((sj) => {
+  const orderedSubJobs = getOrderedTfSubJobs(template);
+  const sorted = orderedSubJobs.map((sj) => {
     const found = jobDistribution.find((d) => d.subJob === sj);
-    return { subJob: sj, count: found?.count ?? 0, middleJob: found?.middleJob ?? '소자' };
+    return {
+      subJob: sj,
+      count: found?.count ?? 0,
+      middleJob: found?.middleJob ?? getMiddleJobBySubJob(sj),
+    };
   });
   const categories = sorted.map((d) => d.subJob);
-  const data = sorted.map((d) => ({ y: d.count, color: COLOR_MAP[d.subJob] ?? '#94a3b8' }));
+  const data = sorted.map((d, index) => ({
+    y: d.count,
+    color: getDistributionColor(d.subJob, d.middleJob, index),
+  }));
   const sojaTotal = sorted.filter((d) => d.middleJob === '소자').reduce((s, d) => s + d.count, 0);
   const gongTotal = sorted.filter((d) => d.middleJob === '공정').reduce((s, d) => s + d.count, 0);
   const height = compact ? 300 : 360;
+  const processStart = sorted.findIndex((d) => d.middleJob === '공정');
+  const hasSoja = sorted.some((d) => d.middleJob === '소자');
+  const hasProcess = processStart >= 0;
+  const sojaEnd = hasProcess ? processStart - 1 : sorted.length - 1;
 
   const options: Highcharts.Options = {
     chart: { type: 'bar', height, margin: compact ? [8, 70, 48, 120] : [20, 80, 56, 120], animation: false },
@@ -59,12 +81,22 @@ export default function JobDistributionChart({ template, compact }: Props) {
       title: { text: null },
       labels: { style: { fontSize: compact ? '11px' : '12px', fontWeight: '600' } },
       plotBands: [
-        { from: -0.5, to: 2.5, color: 'rgba(37,99,235,0.05)',
-          label: { text: '소자', align: 'left', x: -110, style: { fontSize: '11px', fontWeight: '700', color: '#1d4ed8' } } },
-        { from: 2.5, to: 7.5, color: 'rgba(180,83,9,0.05)',
-          label: { text: '공정', align: 'left', x: -110, style: { fontSize: '11px', fontWeight: '700', color: '#b45309' } } },
+        ...(hasSoja ? [{
+          from: -0.5,
+          to: sojaEnd + 0.5,
+          color: 'rgba(37,99,235,0.05)',
+          label: { text: '소자', align: 'left' as const, x: -110, style: { fontSize: '11px', fontWeight: '700', color: '#1d4ed8' } },
+        }] : []),
+        ...(hasProcess ? [{
+          from: processStart - 0.5,
+          to: sorted.length - 0.5,
+          color: 'rgba(180,83,9,0.05)',
+          label: { text: '공정', align: 'left' as const, x: -110, style: { fontSize: '11px', fontWeight: '700', color: '#b45309' } },
+        }] : []),
       ],
-      plotLines: [{ value: 2.5, color: '#cbd5e1', width: 1, dashStyle: 'Dot' }],
+      plotLines: hasSoja && hasProcess
+        ? [{ value: processStart - 0.5, color: '#cbd5e1', width: 1, dashStyle: 'Dot' }]
+        : [],
     },
     yAxis: { min: 0, title: { text: undefined }, labels: { style: { fontSize: '10px' }, y: 14 }, tickPixelInterval: 50 },
     legend: { enabled: false },

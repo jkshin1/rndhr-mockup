@@ -1,9 +1,13 @@
 import styled from 'styled-components';
+import ResultConditionEditorSection from './ResultConditionEditorSection';
+import TFSpecialContextSection from './TFSpecialContextSection';
 import JobDistributionChart from './JobDistributionChart';
-import TFCompetencyChart from './TFCompetencyChart';
-import RiskAnalysisSection from './RiskAnalysisSection';
-import FunctionOrgImpactSection from './FunctionOrgImpactSection';
-import type { TFTemplate } from '../../data/mockData';
+import TFCareerChart from './TFCareerChart';
+import CareerDistributionSection from './CareerDistributionSection';
+import TechTfExperienceDepthSection from './TechTfExperienceDepthSection';
+import CareerRiskAnalysisSection from './CareerRiskAnalysisSection';
+import FunctionOrgCareerImpactSection from './FunctionOrgCareerImpactSection';
+import { getTemplateSpecialFactors, type TFTemplate } from '../../data/mockData';
 
 const Panel = styled.div`display: flex; flex-direction: column; gap: 24px;`;
 
@@ -42,15 +46,34 @@ const SectionSub = styled.p`
 
 interface Props {
   template: TFTemplate;
+  loading?: boolean;
+  onRerun: (template: TFTemplate) => void;
 }
 
-export default function RecommendationPanel({ template }: Props) {
+export default function RecommendationPanel({ template, loading = false, onRerun }: Props) {
+  const specialFactors = getTemplateSpecialFactors(template);
+  const specialContextText = specialFactors.platformUndecided
+    ? 'Adhara 이후 구간의 차기 Tech Platform 미정 상태와 신규 요소기술 셋업 비중을 반영한 추가 인력·경력 가중'
+    : `${specialFactors.platformSeries} 기준 주요 적용 사항과 신규 요소기술 셋업 비중을 반영한 추가 인력·경력 가중`;
+
   return (
     <Panel>
       <PanelHeader>
         <h2>{template.name} — 배치 시뮬레이션 결과</h2>
-        <p>직무 구성 현황 · 역량 Gap · 인력 배치 Risk 분석 · Function 조직 영향</p>
+        <p>직무 구성 현황 · 평균 경력 · 적용 Tech Platform/신규 요소기술 셋업 영향 · CL 분포 · 이전 Tech TF 경험 깊이 · Function 조직 영향</p>
       </PanelHeader>
+
+      <Section>
+        <SectionTitle>결과 조건 변경</SectionTitle>
+        <SectionSub>직무별 구성원 수와 최소 경력을 수정한 뒤 같은 화면에서 재시뮬레이션</SectionSub>
+        <ResultConditionEditorSection template={template} loading={loading} onRerun={onRerun} />
+      </Section>
+
+      <Section>
+        <SectionTitle>적용 Tech Platform · 신규 요소기술 셋업 영향</SectionTitle>
+        <SectionSub>{specialContextText}</SectionSub>
+        <TFSpecialContextSection template={template} />
+      </Section>
 
       <ChartsRow>
         <Section>
@@ -59,22 +82,34 @@ export default function RecommendationPanel({ template }: Props) {
           <JobDistributionChart template={template} compact />
         </Section>
         <Section>
-          <SectionTitle>필요 역량 vs 배치 후 역량</SectionTitle>
-          <SectionSub>직무별 목표 역량 대비 실제 배치 후 역량 비교</SectionSub>
-          <TFCompetencyChart template={template} compact />
+          <SectionTitle>요구 평균 경력 vs 배치 평균 경력</SectionTitle>
+          <SectionSub>직무별 평균 경력, 이전 Tech TF 경험, 리더 경력, 적용 Tech Platform과 신규 요소기술 셋업 가중 반영 결과 비교</SectionSub>
+          <TFCareerChart template={template} compact />
         </Section>
       </ChartsRow>
 
       <Section>
-        <SectionTitle>인력 배치 Risk 점검</SectionTitle>
-        <SectionSub>직무별 인원 부족 현황 및 역량 Gap 분석 · 권고 조치</SectionSub>
-        <RiskAnalysisSection template={template} />
+        <SectionTitle>CL2~CL5 경력 분포</SectionTitle>
+        <SectionSub>직무별 배치 인원의 직급 분포와 평균 경력 수준 비교</SectionSub>
+        <CareerDistributionSection template={template} />
       </Section>
 
       <Section>
-        <SectionTitle>Function 조직 영향 분석</SectionTitle>
-        <SectionSub>TF 구성을 위한 Function 조직(TD · 공정) 인력 차출 영향 · 잔여 인력 및 역량 리스크 점검</SectionSub>
-        <FunctionOrgImpactSection template={template} />
+        <SectionTitle>이전 Tech TF 경험 깊이</SectionTitle>
+        <SectionSub>직무별 TF 경험자 비율, 최근 참여, 심화 경험, 리더+TF 보유 현황</SectionSub>
+        <TechTfExperienceDepthSection template={template} />
+      </Section>
+
+      <Section>
+        <SectionTitle>인력 배치 경력 Risk 점검</SectionTitle>
+        <SectionSub>직무별 평균 경력, 이전 Tech TF 경험, 팀장/Part장/Module장 경력과 적용 Tech Platform/신규 요소기술 셋업 가중 기준 분석</SectionSub>
+        <CareerRiskAnalysisSection template={template} />
+      </Section>
+
+      <Section>
+        <SectionTitle>Function 조직 경력 영향 분석</SectionTitle>
+        <SectionSub>TF 구성을 위한 Function 조직(TD · 공정) 인력 차출 영향 · 잔여 인력 및 평균 경력 리스크 점검 · 적용 Tech Platform/신규 요소기술 셋업 영향 반영</SectionSub>
+        <FunctionOrgCareerImpactSection template={template} />
       </Section>
     </Panel>
   );

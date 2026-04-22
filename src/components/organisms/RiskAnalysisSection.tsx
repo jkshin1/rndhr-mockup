@@ -3,9 +3,8 @@ import SummaryCard from '../molecules/SummaryCard';
 import RiskChip from '../molecules/RiskChip';
 import MiddleJobBadge from '../atoms/MiddleJobBadge';
 import ActionPill from '../atoms/ActionPill';
-import type { TFTemplate } from '../../data/mockData';
+import { getMiddleJobBySubJob, getOrderedTfSubJobs, type TFTemplate } from '../../data/mockData';
 
-const SUB_JOBS_ORDER = ['PI', 'Device', 'FA', 'Photo공정', 'Etch공정', 'Diffusion공정', 'ThinFilm공정', 'C&C공정'] as const;
 type RiskLevel = 'high' | 'medium' | 'low';
 type Action = '신규 채용' | '코칭·육성' | '현 수준 유지';
 
@@ -106,7 +105,8 @@ const JobTag = styled.span<{ $type: 'hire' | 'coach' }>`
 `;
 
 export default function RiskAnalysisSection({ template }: { template: TFTemplate }) {
-  const items: RiskItem[] = SUB_JOBS_ORDER.map((sj) => {
+  const orderedSubJobs = getOrderedTfSubJobs(template);
+  const items: RiskItem[] = orderedSubJobs.map((sj) => {
     const dist = template.jobDistribution.find((d) => d.subJob === sj);
     const actualScore = template.competencyScores.find((c) => c.subJob === sj)?.score ?? 0;
     const targetScore = template.targetCompetencyScores.find((c) => c.subJob === sj)?.score ?? 0;
@@ -114,7 +114,18 @@ export default function RiskAnalysisSection({ template }: { template: TFTemplate
     const countGap = Math.max(0, targetCount - currentCount);
     const compGap = Math.max(0, targetScore - actualScore);
     const { riskLevel, actions } = computeRisk(countGap, compGap);
-    return { subJob: sj, middleJob: dist?.middleJob ?? '소자', currentCount, targetCount, countGap, actualScore, targetScore, compGap, riskLevel, actions };
+    return {
+      subJob: sj,
+      middleJob: dist?.middleJob ?? getMiddleJobBySubJob(sj),
+      currentCount,
+      targetCount,
+      countGap,
+      actualScore,
+      targetScore,
+      compGap,
+      riskLevel,
+      actions,
+    };
   });
 
   const highItems = items.filter((i) => i.riskLevel === 'high');

@@ -92,7 +92,7 @@ export default function TFPage() {
 
   return (
     <Layout style={{ height: '100%', overflow: 'hidden' }}>
-      <Sider width={380}>
+      <Sider width={460}>
         <TFRequestPanel
           templates={tfTemplates}
           onSelect={handleSelect}
@@ -104,7 +104,7 @@ export default function TFPage() {
         {loading && (
           <LoadingWrap>
             <Spin size="large" />
-            <span>역량 데이터를 분석하여 최적의 인력을 추천하고 있습니다...</span>
+            <span>경력 이력, 이전 Tech TF 경험, 리더 경력, 적용 Tech Platform과 신규 요소기술 셋업 영향을 분석하여 결과를 생성하고 있습니다...</span>
           </LoadingWrap>
         )}
 
@@ -113,9 +113,9 @@ export default function TFPage() {
             <EmptyIcon>👥</EmptyIcon>
             <EmptyTitle>TF 유형을 선택하고 추천을 요청하세요</EmptyTitle>
             <EmptyDesc>
-              구성원들의 역량, 경력, 프로젝트 이력을 분석하여
+              구성원들의 경력 이력, 이전 Tech TF 경험, 리더 경력, 적용 Tech Platform과 신규 요소기술 셋업 영향을 분석하여
               <br />
-              최적의 TF 인력 구성을 추천합니다.
+              TF 구성 시뮬레이션 결과를 생성합니다.
             </EmptyDesc>
           </EmptyState>
         )}
@@ -125,15 +125,21 @@ export default function TFPage() {
             <EmptyIcon>🔍</EmptyIcon>
             <EmptyTitle>{selectedTemplate.name} TF가 선택되었습니다</EmptyTitle>
             <EmptyDesc>
-              좌측 하단의 <strong>인력 배치 시뮬레이션</strong> 버튼을 눌러
+              좌측에서 직무별 구성원 수를 조정한 뒤
               <br />
-              직무 구성 현황 및 역량 Gap 분석 결과를 확인하세요.
+              <strong>인력 배치 시뮬레이션</strong> 버튼을 눌러
+              <br />
+              직무 구성 현황 및 경력 기준 분석 결과를 확인하세요.
             </EmptyDesc>
           </EmptyState>
         )}
 
         {!loading && recommendations && activeTemplate && (
-          <RecommendationPanel template={activeTemplate} />
+          <RecommendationPanel
+            template={activeTemplate}
+            loading={loading}
+            onRerun={handleRecommend}
+          />
         )}
       </Content>
     </Layout>

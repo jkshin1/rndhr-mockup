@@ -3,6 +3,9 @@ import { Button, Tooltip } from 'antd';
 import styled from 'styled-components';
 import SummaryCard from '../molecules/SummaryCard';
 import RiskChip from '../molecules/RiskChip';
+import OrgJobDistributionChart from './OrgJobDistributionChart';
+import OrgCompetencyChart from './OrgCompetencyChart';
+import OrgFunctionImpactSection from './OrgFunctionImpactSection';
 import type {
   OrgSetupSimResult,
   OrgSimSummary,
@@ -135,6 +138,14 @@ const SummaryGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 12px;
+`;
+
+// ── Charts Row (직무 구성 현황 · 필요 역량 vs 배치 후 역량) ──
+
+const ChartsRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 `;
 
 // ── 3. Placement Details ─────────────────────────────────────
@@ -1036,6 +1047,20 @@ export default function OrgSetupResultPanel({ result, setupInput, onReset }: Pro
         <SummaryCard label="리스크 팀" value={`${summary.riskTeamCount}개`} color={summary.riskTeamCount > 0 ? '#ef4444' : '#22c55e'} />
       </SummaryGrid>
 
+      {/* ── 2-1. Charts Row: 직무 구성 현황 · 필요 역량 vs 배치 후 역량 ── */}
+      <ChartsRow>
+        <Section>
+          <SectionTitle>직무 구성 현황</SectionTitle>
+          <SectionSub>세부 직무별 요청 인원 대비 배치 인원</SectionSub>
+          <OrgJobDistributionChart placements={result.placements} setupInput={setupInput} compact />
+        </Section>
+        <Section>
+          <SectionTitle>필요 역량 vs 배치 후 역량</SectionTitle>
+          <SectionSub>세부 직무별 목표 역량 대비 실제 배치 후 역량 비교</SectionSub>
+          <OrgCompetencyChart placements={result.placements} compact />
+        </Section>
+      </ChartsRow>
+
       {/* ── 3. Placement Details ── */}
       <Section>
         <SectionTitle>세부 직무별 배치 결과</SectionTitle>
@@ -1149,6 +1174,13 @@ export default function OrgSetupResultPanel({ result, setupInput, onReset }: Pro
             </DamDangCard>
           ))}
         </SectionBody>
+      </Section>
+
+      {/* ── 5-1. Function 조직 영향 분석 ── */}
+      <Section>
+        <SectionTitle>Function 조직 영향 분석</SectionTitle>
+        <SectionSub>신설 조직 인력 차출에 따른 Function 담당 조직 잔여 인력 및 최소 운영 기준 점검</SectionSub>
+        <OrgFunctionImpactSection damDangRisks={result.damDangRisks} middleJob={setupInput.middleJob} />
       </Section>
 
       {/* ── 6. Competency Gap (역량 Gap 분석 — 채용·육성 위) ── */}

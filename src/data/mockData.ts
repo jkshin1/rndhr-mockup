@@ -1,7 +1,58 @@
 export type MiddleJob = "소자" | "공정";
-export type SubJobDevice = "PI" | "Device" | "FA";
-export type SubJobProcess = "Photo공정" | "Etch공정" | "Diffusion공정" | "ThinFilm공정" | "C&C공정";
-export type SubJob = SubJobDevice | SubJobProcess;
+export const DEVICE_SUB_JOBS = ["PI", "Device", "FA"] as const;
+export const PROCESS_SUB_JOBS = [
+  "Photo공정",
+  "Etch공정",
+  "Diffusion공정",
+  "ThinFilm공정",
+  "C&C공정",
+] as const;
+export const KNOWN_TF_SUB_JOBS = [...DEVICE_SUB_JOBS, ...PROCESS_SUB_JOBS] as const;
+export type SubJobDevice = (typeof DEVICE_SUB_JOBS)[number];
+export type SubJobProcess = (typeof PROCESS_SUB_JOBS)[number];
+export type KnownSubJob = (typeof KNOWN_TF_SUB_JOBS)[number];
+export type SubJob = KnownSubJob | string;
+
+export function isKnownSubJob(subJob: string): subJob is KnownSubJob {
+  return (KNOWN_TF_SUB_JOBS as readonly string[]).includes(subJob);
+}
+
+export function getMiddleJobBySubJob(subJob: string, fallback: MiddleJob = "소자"): MiddleJob {
+  if ((DEVICE_SUB_JOBS as readonly string[]).includes(subJob)) return "소자";
+  if ((PROCESS_SUB_JOBS as readonly string[]).includes(subJob)) return "공정";
+  return fallback;
+}
+
+export function getOrderedTfSubJobs(template: Pick<TFTemplate, "jobDistribution" | "jobCompetencies" | "targetCompetencyScores" | "competencyScores">): string[] {
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+
+  KNOWN_TF_SUB_JOBS.forEach((subJob) => {
+    const exists =
+      template.jobDistribution.some((item) => item.subJob === subJob) ||
+      template.jobCompetencies.some((item) => item.subJob === subJob) ||
+      template.targetCompetencyScores.some((item) => item.subJob === subJob) ||
+      template.competencyScores.some((item) => item.subJob === subJob);
+
+    if (exists) {
+      seen.add(subJob);
+      ordered.push(subJob);
+    }
+  });
+
+  const extras = [
+    ...template.jobDistribution.map((item) => item.subJob),
+    ...template.jobCompetencies.map((item) => item.subJob),
+    ...template.targetCompetencyScores.map((item) => item.subJob),
+    ...template.competencyScores.map((item) => item.subJob),
+  ].filter((subJob) => {
+    if (seen.has(subJob)) return false;
+    seen.add(subJob);
+    return true;
+  });
+
+  return [...ordered, ...extras];
+}
 
 export interface JobDistribution {
   middleJob: MiddleJob;
@@ -49,16 +100,46 @@ export interface JobCompetency {
   minCareerYears: number;
 }
 
+export type PlatformStage = 1 | 2 | 3;
+
+export interface TFSpecialFactors {
+  techSequence: number;
+  platformSeries: string;
+  platformStage: PlatformStage;
+  nuddRatio: number;
+  platformContextLabel?: string;
+  platformKeyFocus?: string;
+  platformUndecided?: boolean;
+}
+
 export interface TFTemplate {
   id: string;
   name: string;
   description: string;
   totalHeadcount: number;
+  specialFactors?: TFSpecialFactors;
   jobDistribution: JobDistribution[];
   targetCompetencyScores: CompetencyScore[];  // 필요 역량 (목표)
   competencyScores: CompetencyScore[];         // 배치 후 역량 (실제)
   jobCompetencies: JobCompetency[];
   requiredRoles: RequiredRole[];
+}
+
+export function getPlatformStageLabel(platformStage: PlatformStage): string {
+  if (platformStage === 1) return "1차 Tech";
+  if (platformStage === 2) return "2차 Tech";
+  return "3차 Tech";
+}
+
+export function getTemplateSpecialFactors(template: Pick<TFTemplate, "specialFactors">): TFSpecialFactors {
+  return template.specialFactors ?? {
+    techSequence: 0,
+    platformSeries: "차기 Tech Platform 미정",
+    platformStage: 2,
+    nuddRatio: 0.25,
+    platformContextLabel: "적용 Tech Platform 정보 미입력",
+    platformUndecided: true,
+  };
 }
 
 /** CL3 · CL4 · CL5 직급 체계 변환 */
@@ -462,6 +543,14 @@ export const tfTemplates: TFTemplate[] = [
     description:
       "Adhara TF는 차세대 HBM4 제품 개발을 위한 핵심 기술 인력을 구성합니다.",
     totalHeadcount: 355,
+    specialFactors: {
+      techSequence: 5,
+      platformSeries: "3rd Tech Platform",
+      platformStage: 3,
+      nuddRatio: 0.32,
+      platformContextLabel: "Kapella · Altair · Adhara 구간",
+      platformKeyFocus: "VG(Vertical Gate) 적용",
+    },
     jobDistribution: [
       { middleJob: "소자", subJob: "PI",           count: 62, targetCount: 70 },
       { middleJob: "소자", subJob: "Device",       count: 85, targetCount: 95 },
@@ -546,6 +635,14 @@ export const tfTemplates: TFTemplate[] = [
     description:
       "Big Dipper TF는 1c nm 공정 기반 차세대 DRAM 제품 개발 인력을 구성합니다. EUV 공정 적용 확대 및 셀 미세화 기술 확보가 핵심 목표입니다.",
     totalHeadcount: 342,
+    specialFactors: {
+      techSequence: 6,
+      platformSeries: "차기 Tech Platform 미정",
+      platformStage: 2,
+      nuddRatio: 0.22,
+      platformContextLabel: "Adhara 이후 적용 Platform 미정",
+      platformUndecided: true,
+    },
     jobDistribution: [
       { middleJob: "소자", subJob: "PI",           count: 70, targetCount: 80 },
       { middleJob: "소자", subJob: "Device",       count: 74, targetCount: 85 },
@@ -630,6 +727,14 @@ export const tfTemplates: TFTemplate[] = [
     description:
       "Pegasus TF는 AI 가속기에 최적화된 메모리 솔루션 개발 인력을 구성합니다. PIM, CXL 등 차세대 메모리 인터페이스 및 AI 워크로드 대응 기술을 개발합니다.",
     totalHeadcount: 332,
+    specialFactors: {
+      techSequence: 7,
+      platformSeries: "차기 Tech Platform 미정",
+      platformStage: 2,
+      nuddRatio: 0.48,
+      platformContextLabel: "Adhara 이후 적용 Platform 미정",
+      platformUndecided: true,
+    },
     jobDistribution: [
       { middleJob: "소자", subJob: "PI",           count: 55, targetCount: 65 },
       { middleJob: "소자", subJob: "Device",       count: 92, targetCount: 100 },
@@ -714,6 +819,14 @@ export const tfTemplates: TFTemplate[] = [
     description:
       "Libra TF는 300단급 이상 차세대 3D NAND Flash 기술 개발 인력을 구성합니다. HAR 식각, 고단 적층, 컨트롤러 기술이 핵심입니다.",
     totalHeadcount: 368,
+    specialFactors: {
+      techSequence: 8,
+      platformSeries: "차기 Tech Platform 미정",
+      platformStage: 2,
+      nuddRatio: 0.34,
+      platformContextLabel: "Adhara 이후 적용 Platform 미정",
+      platformUndecided: true,
+    },
     jobDistribution: [
       { middleJob: "소자", subJob: "PI",           count: 65, targetCount: 76 },
       { middleJob: "소자", subJob: "Device",       count: 72, targetCount: 80 },
@@ -798,6 +911,14 @@ export const tfTemplates: TFTemplate[] = [
     description:
       "Leo TF는 CXL 기반 차세대 메모리 인터페이스 및 PIM(Processing-In-Memory) 솔루션 개발 인력을 구성합니다. 호스트-메모리 간 대역폭·지연 최적화가 핵심 목표입니다.",
     totalHeadcount: 341,
+    specialFactors: {
+      techSequence: 9,
+      platformSeries: "차기 Tech Platform 미정",
+      platformStage: 2,
+      nuddRatio: 0.41,
+      platformContextLabel: "Adhara 이후 적용 Platform 미정",
+      platformUndecided: true,
+    },
     jobDistribution: [
       { middleJob: "소자", subJob: "PI",           count: 52, targetCount: 62 },
       { middleJob: "소자", subJob: "Device",       count: 88, targetCount: 98 },
@@ -1035,15 +1156,35 @@ export interface FunctionOrgImpact extends FunctionOrgBaselineItem {
  * 특정 TF가 Function 조직에서 인력을 차출한 후의 영향을 계산.
  * 잔여 인력이 최소 기준 아래로 내려가거나 핵심 인력 역량 하락이 큰 경우 고/중위험으로 판정.
  */
-export function computeFunctionOrgImpact(templateId: string): FunctionOrgImpact[] {
-  const pull = functionOrgPullByTF[templateId] ?? [];
+function deriveCompetencyDrop(
+  templateId: string,
+  subJob: SubJob,
+  pulledCount: number,
+  originalCount: number
+): number {
+  if (pulledCount <= 0) return 0;
+
+  const defaultPull = functionOrgPullByTF[templateId]?.find((item) => item.subJob === subJob);
+  if (defaultPull && defaultPull.pulledCount > 0) {
+    return Math.max(
+      1,
+      Math.min(15, Math.round(defaultPull.competencyDrop * (pulledCount / defaultPull.pulledCount)))
+    );
+  }
+
+  return Math.max(1, Math.min(15, Math.round((pulledCount / Math.max(originalCount, 1)) * 20)));
+}
+
+export function computeFunctionOrgImpact(
+  template: Pick<TFTemplate, "id" | "jobDistribution">
+): FunctionOrgImpact[] {
+  const pulls = new Map(template.jobDistribution.map((item) => [item.subJob, item.count]));
 
   return functionOrgBaseline.map((b) => {
-    const p = pull.find((x) => x.subJob === b.subJob);
-    const pulledCount = p?.pulledCount ?? 0;
-    const competencyDrop = p?.competencyDrop ?? 0;
-    const remainingCount = b.originalCount - pulledCount;
-    const competencyAfter = b.competencyBefore - competencyDrop;
+    const pulledCount = pulls.get(b.subJob) ?? 0;
+    const competencyDrop = deriveCompetencyDrop(template.id, b.subJob, pulledCount, b.originalCount);
+    const remainingCount = Math.max(0, b.originalCount - pulledCount);
+    const competencyAfter = Math.max(0, b.competencyBefore - competencyDrop);
     const shortage = Math.max(0, b.minimumRequired - remainingCount);
     const margin = remainingCount - b.minimumRequired;
 

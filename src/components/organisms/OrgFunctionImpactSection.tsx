@@ -2,15 +2,10 @@ import styled from 'styled-components';
 import SummaryCard from '../molecules/SummaryCard';
 import MiddleJobBadge from '../atoms/MiddleJobBadge';
 import RiskChip from '../molecules/RiskChip';
-import {
-  computeFunctionOrgImpact,
-  functionOrgBaseline,
-  type TFTemplate,
-  type FunctionOrgImpact,
-  type FunctionRiskLevel,
-} from '../../data/mockData';
+import type { DamDangRisk } from '../../data/orgSetupSimulation';
+import type { OrgMiddleJob } from '../../data/orgSetupData';
 
-const SUB_ORDER = ['PI', 'Device', 'FA', 'Photo공정', 'Etch공정', 'Diffusion공정', 'ThinFilm공정', 'C&C공정'] as const;
+type RiskLevel = 'high' | 'medium' | 'low';
 
 /* ── Layout ── */
 const Wrap = styled.div`display: flex; flex-direction: column; gap: 16px;`;
@@ -46,7 +41,7 @@ const LegendBox = styled.i<{ $variant: 'remain' | 'pulled' | 'min' }>`
 /* ── Single bar row ── */
 const BarRow = styled.div`
   display: grid;
-  grid-template-columns: 150px 1fr 240px;
+  grid-template-columns: 180px 1fr 240px;
   gap: 16px; align-items: center;
   padding: 14px 0 10px;
   border-bottom: 1px dashed ${({ theme }) => theme.colors.borderLight};
@@ -55,11 +50,12 @@ const BarRow = styled.div`
 
 const RowLabel = styled.div`display: flex; flex-direction: column; gap: 4px;`;
 const RowLabelName = styled.strong`font-size: 14px; color: ${({ theme }) => theme.colors.textPrimary};`;
+const TeamSub = styled.span`font-size: 10px; color: ${({ theme }) => theme.colors.textMuted};`;
 
 const BarArea = styled.div`position: relative; height: 30px; margin-top: 14px;`;
 const BarTrack = styled.div`position: absolute; inset: 0; display: flex; border-radius: 6px; overflow: hidden; background: #f1f5f9;`;
 
-const RemainBar = styled.div<{ $risk: FunctionRiskLevel; $pct: number }>`
+const RemainBar = styled.div<{ $risk: RiskLevel; $pct: number }>`
   width: ${({ $pct }) => $pct}%;
   display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
   color: #fff; font-size: 12px; font-weight: 700; transition: width 0.4s ease;
@@ -94,12 +90,13 @@ const FlowRow = styled.div`display: flex; align-items: baseline; gap: 6px; font-
   .arrow { color: #94a3b8; }
   .delta { font-size: 11px; color: #64748b; }
 `;
-const GapRow = styled.div<{ $risk: FunctionRiskLevel }>`
+const GapRow = styled.div<{ $risk: RiskLevel }>`
   font-weight: 700; font-size: 12px;
   color: ${({ theme, $risk }) => theme.colors.risk[$risk].text};
 `;
-const CompRow = styled.div`color: #64748b; font-size: 11px; display: flex; align-items: center; gap: 4px;
-  em { font-style: normal; font-weight: 700; color: #be123c; }
+const TeamRow = styled.div`
+  color: #64748b; font-size: 11px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  em { font-style: normal; font-weight: 700; color: #475569; }
 `;
 
 /* ── Action cards ── */
@@ -131,95 +128,92 @@ const MediumTag = styled.span`
   padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
 `;
 
-const Notice = styled.div`
-  padding: 12px 14px;
-  background: #f8fafc;
-  border: 1px dashed ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 12px;
-  line-height: 1.6;
-`;
+interface Props {
+  damDangRisks: DamDangRisk[];
+  middleJob: OrgMiddleJob;
+}
 
-export default function FunctionOrgImpactSection({ template }: { template: TFTemplate }) {
-  const raw = computeFunctionOrgImpact(template);
-  const items: FunctionOrgImpact[] = SUB_ORDER
-    .map((sj) => raw.find((r) => r.subJob === sj))
-    .filter((x): x is FunctionOrgImpact => Boolean(x));
-  const baselineSubJobs = new Set(functionOrgBaseline.map((item) => item.subJob));
-  const ignoredCustomJobs = template.jobDistribution
-    .filter((item) => !baselineSubJobs.has(item.subJob) && item.count > 0)
-    .map((item) => item.subJob);
+export default function OrgFunctionImpactSection({ damDangRisks, middleJob }: Props) {
+  if (damDangRisks.length === 0) {
+    return (
+      <Wrap>
+        <div style={{ padding: 20, color: '#94a3b8', fontSize: 13 }}>
+          Function 조직 영향 데이터가 없습니다.
+        </div>
+      </Wrap>
+    );
+  }
 
-  const tdPulled   = items.filter((i) => i.functionMiddle === 'TD').reduce((s, i) => s + i.pulledCount, 0);
-  const gongPulled = items.filter((i) => i.functionMiddle === '공정').reduce((s, i) => s + i.pulledCount, 0);
-  const totalPulled = tdPulled + gongPulled;
-  const highItems   = items.filter((i) => i.riskLevel === 'high');
-  const mediumItems = items.filter((i) => i.riskLevel === 'medium');
-  const maxOriginal = Math.max(...items.map((i) => i.originalCount));
+  const totalPulled = damDangRisks.reduce((s, d) => s + d.totalPulled, 0);
+  const totalCurrent = damDangRisks.reduce((s, d) => s + d.totalCurrentHeadcount, 0);
+  const totalRemaining = damDangRisks.reduce((s, d) => s + d.totalRemaining, 0);
+  const highItems = damDangRisks.filter((d) => d.riskLevel === 'high');
+  const mediumItems = damDangRisks.filter((d) => d.riskLevel === 'medium');
+  const maxOriginal = Math.max(...damDangRisks.map((d) => d.totalCurrentHeadcount));
   const pct = (n: number) => (n / maxOriginal) * 100;
 
   return (
     <Wrap>
       <SummaryGrid>
-        <SummaryCard label="총 차출 인력"   value={`${totalPulled}명`}       color="#6366f1" />
-        <SummaryCard label="TD 조직 차출"   value={`${tdPulled}명`}          color="#2563eb" />
-        <SummaryCard label="공정 조직 차출" value={`${gongPulled}명`}        color="#d97706" />
-        <SummaryCard label="고위험 직무"    value={`${highItems.length}개`}   color="#ef4444" />
-        <SummaryCard label="중위험 직무"    value={`${mediumItems.length}개`} color="#f59e0b" />
+        <SummaryCard label="총 차출 인력"    value={`${totalPulled}명`}         color="#6366f1" />
+        <SummaryCard label="영향 담당 조직"  value={`${damDangRisks.length}개`} color="#2563eb" />
+        <SummaryCard label="잔여 인력"       value={`${totalRemaining}명`}      color="#16a34a" />
+        <SummaryCard label="고위험 담당"     value={`${highItems.length}개`}    color="#ef4444" />
+        <SummaryCard label="중위험 담당"     value={`${mediumItems.length}개`}  color="#f59e0b" />
       </SummaryGrid>
 
       <BarsPanel>
         <Legend>
           <span><LegendBox $variant="remain" />잔여 인력</span>
-          <span><LegendBox $variant="pulled" />TF 차출</span>
+          <span><LegendBox $variant="pulled" />신설 조직 차출</span>
           <span><LegendBox $variant="min" />최소 필요 인력</span>
         </Legend>
-        {items.map((item) => (
-          <BarRow key={item.subJob}>
-            <RowLabel>
-              <MiddleJobBadge type={item.functionMiddle} />
-              <RowLabelName>{item.subJob}</RowLabelName>
-              <RiskChip level={item.riskLevel} />
-            </RowLabel>
-            <BarArea>
-              <BarTrack>
-                <RemainBar $risk={item.riskLevel} $pct={pct(item.remainingCount)}>
-                  {pct(item.remainingCount) > 10 && <span>{item.remainingCount}</span>}
-                </RemainBar>
-                <PulledBar $pct={pct(item.pulledCount)}>
-                  {pct(item.pulledCount) > 6 && <span>−{item.pulledCount}</span>}
-                </PulledBar>
-              </BarTrack>
-              <MinLine $pct={pct(item.minimumRequired)}>
-                <MinLabel>min {item.minimumRequired}</MinLabel>
-              </MinLine>
-            </BarArea>
-            <Stats>
-              <FlowRow>
-                <span>{item.originalCount}명</span>
-                <span className="arrow">→</span>
-                <strong>{item.remainingCount}명</strong>
-                <span className="delta">(−{item.pulledCount})</span>
-              </FlowRow>
-              <GapRow $risk={item.riskLevel}>
-                {item.shortage > 0 ? `▼ 최소 기준 ${item.shortage}명 부족` : `✓ ${item.margin}명 여유`}
-              </GapRow>
-              <CompRow>
-                역량 {item.competencyBefore} <span className="arrow">→</span> {item.competencyAfter}
-                {item.competencyDrop > 0 && <em> (−{item.competencyDrop}pt)</em>}
-              </CompRow>
-            </Stats>
-          </BarRow>
-        ))}
+        {damDangRisks.map((dd) => {
+          const shortage = Math.max(0, dd.minimumRequired - dd.totalRemaining);
+          const margin = dd.totalRemaining - dd.minimumRequired;
+          return (
+            <BarRow key={dd.damDangName}>
+              <RowLabel>
+                <MiddleJobBadge type={middleJob} />
+                <RowLabelName>{dd.damDangName}</RowLabelName>
+                <RiskChip level={dd.riskLevel} />
+                <TeamSub>하위 팀 {dd.teams.length}개</TeamSub>
+              </RowLabel>
+              <BarArea>
+                <BarTrack>
+                  <RemainBar $risk={dd.riskLevel} $pct={pct(dd.totalRemaining)}>
+                    {pct(dd.totalRemaining) > 10 && <span>{dd.totalRemaining}</span>}
+                  </RemainBar>
+                  <PulledBar $pct={pct(dd.totalPulled)}>
+                    {pct(dd.totalPulled) > 6 && <span>−{dd.totalPulled}</span>}
+                  </PulledBar>
+                </BarTrack>
+                <MinLine $pct={pct(dd.minimumRequired)}>
+                  <MinLabel>min {dd.minimumRequired}</MinLabel>
+                </MinLine>
+              </BarArea>
+              <Stats>
+                <FlowRow>
+                  <span>{dd.totalCurrentHeadcount}명</span>
+                  <span className="arrow">→</span>
+                  <strong>{dd.totalRemaining}명</strong>
+                  <span className="delta">(−{dd.totalPulled})</span>
+                </FlowRow>
+                <GapRow $risk={dd.riskLevel}>
+                  {shortage > 0 ? `▼ 최소 기준 ${shortage}명 부족` : `✓ ${margin}명 여유`}
+                </GapRow>
+                <TeamRow>
+                  <em>영향 팀:</em>
+                  {dd.teams.slice(0, 3).map((t) => (
+                    <span key={t.teamName}>{t.teamName}</span>
+                  ))}
+                  {dd.teams.length > 3 && <span>외 {dd.teams.length - 3}</span>}
+                </TeamRow>
+              </Stats>
+            </BarRow>
+          );
+        })}
       </BarsPanel>
-
-      {ignoredCustomJobs.length > 0 && (
-        <Notice>
-          신규 역량 <strong>{ignoredCustomJobs.join(', ')}</strong> 은 공통 Function 조직 기준 데이터가 없어
-          영향 계산에서 제외했습니다.
-        </Notice>
-      )}
 
       {(highItems.length > 0 || mediumItems.length > 0) && (
         <ActionsWrap>
@@ -228,18 +222,23 @@ export default function FunctionOrgImpactSection({ template }: { template: TFTem
               <Icon>⚠️</Icon>
               <CardBody>
                 <CardTitle $variant="high">Function 조직 고위험 발생</CardTitle>
-                <CardDesc><strong>{highItems.length}개 직무</strong>에서 최소 운영 인원 미달 또는 핵심 인력 손실 발생</CardDesc>
+                <CardDesc>
+                  <strong>{highItems.length}개 담당</strong>에서 최소 운영 기준 미달 · 신설 조직 차출 규모 재검토 필요
+                </CardDesc>
                 <TagList>
-                  {highItems.map((i) => (
-                    <ItemRow key={i.subJob}>
-                      <ItemTag>{i.functionMiddle} · <strong>{i.subJob}</strong></ItemTag>
-                      <ItemMsg>
-                        {i.shortage > 0
-                          ? `잔여 ${i.remainingCount}명 (최소 ${i.minimumRequired}명) · ${i.shortage}명 충원 또는 차출 축소 검토`
-                          : `핵심 인력 차출로 역량 ${i.competencyDrop}pt 하락 · 대체 인력 확보 필요`}
-                      </ItemMsg>
-                    </ItemRow>
-                  ))}
+                  {highItems.map((i) => {
+                    const shortage = Math.max(0, i.minimumRequired - i.totalRemaining);
+                    return (
+                      <ItemRow key={i.damDangName}>
+                        <ItemTag>{middleJob} · <strong>{i.damDangName}</strong></ItemTag>
+                        <ItemMsg>
+                          {shortage > 0
+                            ? `잔여 ${i.totalRemaining}명 (최소 ${i.minimumRequired}명) · ${shortage}명 충원 또는 차출 축소 검토`
+                            : `차출 규모 ${i.totalPulled}명 · 핵심 인력 집중 손실로 운영 리스크 발생`}
+                        </ItemMsg>
+                      </ItemRow>
+                    );
+                  })}
                 </TagList>
               </CardBody>
             </ActionCard>
@@ -249,17 +248,40 @@ export default function FunctionOrgImpactSection({ template }: { template: TFTem
               <Icon>📌</Icon>
               <CardBody>
                 <CardTitle $variant="medium">Function 조직 모니터링 필요</CardTitle>
-                <CardDesc><strong>{mediumItems.length}개 직무</strong>가 최소 운영 기준에 근접 · 추가 차출 시 리스크 전환 가능</CardDesc>
+                <CardDesc>
+                  <strong>{mediumItems.length}개 담당</strong>이 최소 운영 기준에 근접 · 추가 차출 시 리스크 전환 가능
+                </CardDesc>
                 <TagList>
-                  {mediumItems.map((i) => (
-                    <MediumTag key={i.subJob}>{i.subJob} (여유 {i.margin}명 · 역량 −{i.competencyDrop}pt)</MediumTag>
-                  ))}
+                  {mediumItems.map((i) => {
+                    const margin = i.totalRemaining - i.minimumRequired;
+                    return (
+                      <MediumTag key={i.damDangName}>
+                        {i.damDangName} (차출 {i.totalPulled}명 · 여유 {margin}명)
+                      </MediumTag>
+                    );
+                  })}
                 </TagList>
               </CardBody>
             </ActionCard>
           )}
         </ActionsWrap>
       )}
+
+      <div style={{
+        padding: '10px 14px',
+        background: '#f8fafc',
+        border: '1px solid #e2e8f0',
+        borderRadius: 8,
+        fontSize: 12,
+        color: '#64748b',
+        lineHeight: 1.6,
+      }}>
+        현재 인원 <strong style={{ color: '#0f172a' }}>{totalCurrent}명</strong>에서
+        <strong style={{ color: '#be123c' }}> −{totalPulled}명</strong> 차출 →
+        <strong style={{ color: '#0f172a' }}> 잔여 {totalRemaining}명</strong>
+        {' · '}
+        차출률 <strong>{totalCurrent > 0 ? ((totalPulled / totalCurrent) * 100).toFixed(1) : 0}%</strong>
+      </div>
     </Wrap>
   );
 }
