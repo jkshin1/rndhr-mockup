@@ -32,7 +32,7 @@ const BarsPanel = styled.div`
 const Legend = styled.div`
   display: flex;
   gap: 22px;
-  font-size: 11px;
+  font-size: 12px;
   color: ${({ theme }) => theme.colors.textSecondary};
   padding-bottom: 14px;
   margin-bottom: 10px;
@@ -78,7 +78,7 @@ const RowLabel = styled.div`
 `;
 
 const RowLabelName = styled.strong`
-  font-size: 14px;
+  font-size: 15px;
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
@@ -104,7 +104,7 @@ const RemainBar = styled.div<{ $risk: 'high' | 'medium' | 'low'; $pct: number }>
   justify-content: flex-end;
   padding-right: 10px;
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   transition: width 0.4s ease;
   background: ${({ $risk }) =>
@@ -122,7 +122,7 @@ const PulledBar = styled.div<{ $pct: number }>`
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 `;
 
@@ -151,7 +151,7 @@ const MinLabel = styled.span`
   top: -18px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: #0f172a;
   white-space: nowrap;
@@ -163,19 +163,19 @@ const Stats = styled.div`
   display: flex;
   flex-direction: column;
   gap: 3px;
-  font-size: 12px;
+  font-size: 13px;
 `;
 
 const FlowRow = styled.div`
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: #475569;
 
   strong {
     color: #0f172a;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
   }
 
@@ -184,20 +184,20 @@ const FlowRow = styled.div`
   }
 
   .delta {
-    font-size: 11px;
+    font-size: 12px;
     color: #64748b;
   }
 `;
 
 const GapRow = styled.div<{ $risk: 'high' | 'medium' | 'low' }>`
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   color: ${({ theme, $risk }) => theme.colors.risk[$risk].text};
 `;
 
 const CareerRow = styled.div`
   color: #64748b;
-  font-size: 11px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -239,13 +239,13 @@ const CardBody = styled.div`
 `;
 
 const CardTitle = styled.div<{ $variant: 'high' | 'medium' }>`
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: ${({ $variant }) => ($variant === 'high' ? '#7f1d1d' : '#78350f')};
 `;
 
 const CardDesc = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   color: #475569;
 
   strong {
@@ -272,7 +272,7 @@ const ItemRow = styled.div`
 `;
 
 const ItemTag = styled.span`
-  font-size: 12px;
+  font-size: 13px;
   color: #7f1d1d;
   white-space: nowrap;
 
@@ -283,7 +283,7 @@ const ItemTag = styled.span`
 
 const ItemMsg = styled.span`
   color: #475569;
-  font-size: 12px;
+  font-size: 13px;
   flex: 1;
   line-height: 1.5;
 `;
@@ -294,7 +294,7 @@ const MediumTag = styled.span`
   color: #78350f;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 `;
 

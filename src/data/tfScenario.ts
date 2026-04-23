@@ -1,5 +1,6 @@
 import {
   getMiddleJobBySubJob,
+  type CareerLevelRequirement,
   type MiddleJob,
   type TFTemplate,
 } from "./mockData";
@@ -11,6 +12,8 @@ export interface TFScenarioCompetencyRow {
   requiredSkills: string[];
   responsibility: string;
   minCareerYears: number;
+  minCareerYearsByLevel: CareerLevelRequirement;
+  averageTechTfYears: number;
   count: number;
   targetCount: number;
   targetScore: number;
@@ -20,6 +23,29 @@ export interface TFScenarioCompetencyRow {
 
 const DEFAULT_TARGET_SCORE = 74;
 const DEFAULT_ACTUAL_SCORE = 62;
+const CL_LEVELS: Array<keyof CareerLevelRequirement> = ['CL2', 'CL3', 'CL4', 'CL5'];
+
+function roundOne(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+function normalizeLevelValue(value: number): number {
+  return roundOne(Math.max(0, Number.isFinite(value) ? value : 0));
+}
+
+function normalizeLevelMap(input: Partial<CareerLevelRequirement> | undefined, fallback: number): CareerLevelRequirement {
+  return {
+    CL2: normalizeLevelValue(input?.CL2 ?? fallback),
+    CL3: normalizeLevelValue(input?.CL3 ?? fallback),
+    CL4: normalizeLevelValue(input?.CL4 ?? fallback),
+    CL5: normalizeLevelValue(input?.CL5 ?? fallback),
+  };
+}
+
+function buildClAverage(levelMap: CareerLevelRequirement): number {
+  const total = CL_LEVELS.reduce((sum, level) => sum + levelMap[level], 0);
+  return roundOne(total / CL_LEVELS.length);
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -45,6 +71,11 @@ export function createTFScenarioRows(
       requiredSkills: competency.requiredSkills,
       responsibility: competency.responsibility,
       minCareerYears: competency.minCareerYears,
+      minCareerYearsByLevel: normalizeLevelMap(
+        competency.minCareerYearsByLevel,
+        competency.minCareerYears
+      ),
+      averageTechTfYears: normalizeLevelValue(competency.averageTechTfYears ?? competency.minCareerYears),
       count: seed?.count ?? distribution?.count ?? 0,
       targetCount: distribution?.targetCount ?? seed?.targetCount ?? 0,
       targetScore:
@@ -64,6 +95,11 @@ export function createTFScenarioRows(
     .map((row) => ({
       ...row,
       key: buildRowKey(row.subJob, true),
+      minCareerYearsByLevel: normalizeLevelMap(
+        row.minCareerYearsByLevel,
+        row.minCareerYears
+      ),
+      averageTechTfYears: normalizeLevelValue(row.averageTechTfYears ?? row.minCareerYears),
       targetCount: Math.max(row.targetCount, row.count),
     }));
 
@@ -99,26 +135,41 @@ export function buildScenarioTemplate(
       subJob: row.subJob.trim(),
       count: Math.max(0, Math.round(row.count)),
       targetCount: Math.max(0, Math.round(row.targetCount)),
-      minCareerYears: Math.max(0, Math.round(row.minCareerYears)),
+      minCareerYears: Math.max(0, row.minCareerYears),
+      minCareerYearsByLevel: normalizeLevelMap(
+        row.minCareerYearsByLevel,
+        row.minCareerYears
+      ),
+      averageTechTfYears: normalizeLevelValue(row.averageTechTfYears ?? row.minCareerYears),
       requiredSkills: row.requiredSkills.map((skill) => skill.trim()).filter(Boolean),
       responsibility: row.responsibility.trim(),
     }))
     .filter((row) => row.subJob.length > 0);
 
+  const normalizedClAverages = normalizedRows.map((row) => {
+    const clAverage = buildClAverage(row.minCareerYearsByLevel);
+    return {
+      ...row,
+      minCareerYears: Math.max(0, clAverage),
+    };
+  });
+
   return {
     ...baseTemplate,
-    totalHeadcount: normalizedRows.reduce((sum, row) => sum + row.count, 0),
-    jobDistribution: normalizedRows.map((row) => ({
+    totalHeadcount: normalizedClAverages.reduce((sum, row) => sum + row.count, 0),
+    jobDistribution: normalizedClAverages.map((row) => ({
       middleJob: row.middleJob,
       subJob: row.subJob,
       count: row.count,
       targetCount: row.isCustom ? Math.max(row.targetCount, row.count) : row.targetCount,
     })),
-    jobCompetencies: normalizedRows.map((row) => ({
+    jobCompetencies: normalizedClAverages.map((row) => ({
       subJob: row.subJob,
       requiredSkills: row.requiredSkills,
       responsibility: row.responsibility || `${row.subJob} 역량 기반 TF 수행`,
       minCareerYears: row.minCareerYears,
+      minCareerYearsByLevel: row.minCareerYearsByLevel,
+      averageTechTfYears: row.averageTechTfYears,
     })),
     targetCompetencyScores: normalizedRows.map((row) => ({
       subJob: row.subJob,

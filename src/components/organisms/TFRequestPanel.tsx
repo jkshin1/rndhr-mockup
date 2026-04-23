@@ -1,10 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button, Input, InputNumber, Select, Slider } from 'antd';
 import styled from 'styled-components';
 import TFCard from '../molecules/TFCard';
 import MiddleJobBadge from '../atoms/MiddleJobBadge';
 import SkillTag from '../atoms/SkillTag';
-import type { MiddleJob, TFTemplate } from '../../data/mockData';
+import {
+  DEVICE_SUB_JOBS,
+  PROCESS_SUB_JOBS,
+  type CareerLevelRequirement,
+  type MiddleJob,
+  type TFTemplate,
+} from '../../data/mockData';
 import {
   buildScenarioTemplate,
   createTFScenarioRows,
@@ -13,6 +19,71 @@ import {
 
 const { TextArea } = Input;
 const MIDDLE_ORDER: MiddleJob[] = ['소자', '공정'];
+const SUB_JOBS_BY_MIDDLE: Record<MiddleJob, readonly string[]> = {
+  소자: DEVICE_SUB_JOBS,
+  공정: PROCESS_SUB_JOBS,
+};
+const CAREER_JOB_CATALOG: Record<
+  string,
+  { unitJobs: string[]; detailJobs: string[] }
+> = {
+  PI: {
+    unitJobs: ['공정 통합', '제품 통합', '수율 개선'],
+    detailJobs: ['통합 플로우 설계', 'Lot 운영 최적화', '수율 저해 인자 해소'],
+  },
+  Device: {
+    unitJobs: ['셀 구조 설계', '전기 특성', '회로 검증'],
+    detailJobs: ['셀 구조 최적화', '전기적 특성 분석', '설계 검증'],
+  },
+  FA: {
+    unitJobs: ['결함 분석', '신뢰성', '수율 분석'],
+    detailJobs: ['SEM/TEM 분석', '가속 시험', '수율 저해 인자 분석'],
+  },
+  Photo공정: {
+    unitJobs: ['EUV 패터닝', '오버레이', 'CD 관리'],
+    detailJobs: ['EUV 패터닝 최적화', 'Overlay 안정화', 'CD 편차 개선'],
+  },
+  Etch공정: {
+    unitJobs: ['식각 프로파일', '선택비', '플라즈마 진단'],
+    detailJobs: ['HAR 식각 최적화', '식각 선택비 제어', '식각 균일도 안정화'],
+  },
+  Diffusion공정: {
+    unitJobs: ['증착', '열처리', '계면 제어'],
+    detailJobs: ['ALD 증착 최적화', '열처리 조건 설계', '계면 결함 저감'],
+  },
+  ThinFilm공정: {
+    unitJobs: ['금속화', 'CMP', '배선 신뢰성'],
+    detailJobs: ['금속 배선 형성', '평탄화 최적화', '배선 저항 저감'],
+  },
+  'C&C공정': {
+    unitJobs: ['세정', '표면 개질', '오염 제어'],
+    detailJobs: ['세정 레시피 최적화', '표면 활성화', '파티클 제어'],
+  },
+};
+
+const DEFAULT_UNIT_JOBS = ['직무 운영', '기술 검증', '프로젝트 지원'];
+
+function getUnitJobs(subJob: string): string[] {
+  return CAREER_JOB_CATALOG[subJob]?.unitJobs ?? DEFAULT_UNIT_JOBS;
+}
+
+function getDetailJobs(subJob: string): string[] {
+  return (
+    CAREER_JOB_CATALOG[subJob]?.detailJobs ?? [`${subJob} 기획`, `${subJob} 검증`, `${subJob} 실행`]
+  );
+}
+
+function getDefaultSubJob(middleJob: MiddleJob): string {
+  return SUB_JOBS_BY_MIDDLE[middleJob][0] ?? '';
+}
+
+function getDefaultUnitJob(subJob: string): string {
+  return getUnitJobs(subJob)[0] ?? DEFAULT_UNIT_JOBS[0];
+}
+
+function getDefaultDetailJob(subJob: string): string {
+  return getDetailJobs(subJob)[0] ?? `${subJob} 기획`;
+}
 
 /* ── Layout ── */
 const Panel = styled.div`
@@ -313,20 +384,35 @@ interface Props {
 interface AddFormState {
   middleJob: MiddleJob;
   subJob: string;
-  requiredSkills: string;
+  unitJob: string;
+  detailJob: string;
   responsibility: string;
   minCareerYears: number;
+  averageTechTfYears: number;
   count: number;
 }
 
+const INITIAL_MIDDLE_JOB: MiddleJob = '소자';
+
 const INITIAL_ADD_FORM: AddFormState = {
-  middleJob: '소자',
-  subJob: '',
-  requiredSkills: '',
+  middleJob: INITIAL_MIDDLE_JOB,
+  subJob: getDefaultSubJob(INITIAL_MIDDLE_JOB),
+  unitJob: getDefaultUnitJob(getDefaultSubJob(INITIAL_MIDDLE_JOB)),
+  detailJob: getDefaultDetailJob(getDefaultSubJob(INITIAL_MIDDLE_JOB)),
   responsibility: '',
   minCareerYears: 3,
+  averageTechTfYears: 3,
   count: 1,
 };
+
+function buildDefaultCareerLevelMap(minCareerYears: number): CareerLevelRequirement {
+  return {
+    CL2: minCareerYears,
+    CL3: minCareerYears,
+    CL4: minCareerYears,
+    CL5: minCareerYears,
+  };
+}
 
 interface SeedMessageState {
   variant: 'previous' | 'default';
@@ -396,6 +482,54 @@ export default function TFRequestPanel({ templates, onSelect, onRecommend }: Pro
     [scenarioRows]
   );
 
+  const subJobOptions = useMemo(
+    () =>
+      SUB_JOBS_BY_MIDDLE[addForm.middleJob].map((value) => ({
+        value,
+        label: value,
+      })),
+    [addForm.middleJob]
+  );
+  const unitJobOptions = useMemo(
+    () => getUnitJobs(addForm.subJob).map((value) => ({ value, label: value })),
+    [addForm.subJob]
+  );
+  const detailJobOptions = useMemo(
+    () => getDetailJobs(addForm.subJob).map((value) => ({ value, label: value })),
+    [addForm.subJob]
+  );
+
+  useEffect(() => {
+    setAddForm((form) => {
+      const nextSubJob = SUB_JOBS_BY_MIDDLE[form.middleJob]?.includes(form.subJob)
+        ? form.subJob
+        : getDefaultSubJob(form.middleJob);
+      const unitJobs = getUnitJobs(nextSubJob);
+      const nextUnitJob = unitJobs.includes(form.unitJob)
+        ? form.unitJob
+        : unitJobs[0] ?? DEFAULT_UNIT_JOBS[0];
+      const detailJobs = getDetailJobs(nextSubJob);
+      const nextDetailJob = detailJobs.includes(form.detailJob)
+        ? form.detailJob
+        : detailJobs[0] ?? `${nextSubJob} 기획`;
+
+      if (
+        nextSubJob === form.subJob &&
+        nextUnitJob === form.unitJob &&
+        nextDetailJob === form.detailJob
+      ) {
+        return form;
+      }
+
+      return {
+        ...form,
+        subJob: nextSubJob,
+        unitJob: nextUnitJob,
+        detailJob: nextDetailJob,
+      };
+    });
+  }, [addForm.middleJob, addForm.subJob]);
+
   const totalHeadcount = scenarioRows.reduce((sum, row) => sum + row.count, 0);
   const customCount = scenarioRows.filter((row) => row.isCustom).length;
   const deltaFromTemplate = selected ? totalHeadcount - selected.totalHeadcount : 0;
@@ -453,38 +587,43 @@ export default function TFRequestPanel({ templates, onSelect, onRecommend }: Pro
   };
 
   const handleAddCompetency = () => {
-    const subJob = addForm.subJob.trim();
     if (!selected) return;
 
-    if (!subJob) {
-      setFormError('신규 직무명을 입력하세요.');
+    const subJob = addForm.subJob.trim();
+    const unitJob = addForm.unitJob.trim();
+    const detailJob = addForm.detailJob.trim();
+    const displaySubJob = `${addForm.middleJob} / ${subJob} / ${unitJob} / ${detailJob}`.trim();
+
+    if (!subJob || !unitJob || !detailJob) {
+      setFormError('중직무, 소직무, 단위직무, 세부직무를 모두 선택하세요.');
       return;
     }
 
-    if (scenarioRows.some((row) => row.subJob.toLowerCase() === subJob.toLowerCase())) {
-      setFormError('같은 이름의 직무가 이미 존재합니다.');
+    if (scenarioRows.some((row) => row.subJob.toLowerCase() === displaySubJob.toLowerCase())) {
+      setFormError('같은 조합의 직무가 이미 존재합니다.');
       return;
     }
 
     setScenarioRows((rows) => {
+      const baseMinCareerYears = Math.max(0, Math.round(addForm.minCareerYears));
+      const averageTechTfYears = Math.max(0, Math.round(addForm.averageTechTfYears));
       const nextRows = [
         ...rows,
         {
-          key: `custom:${subJob}`,
+          key: `custom:${displaySubJob}`,
           middleJob: addForm.middleJob,
-          subJob,
-          requiredSkills: addForm.requiredSkills
-            .split(',')
-            .map((skill) => skill.trim())
-            .filter(Boolean),
-          responsibility: addForm.responsibility.trim() || `${subJob} 신규 직무 대응`,
-          minCareerYears: Math.max(0, Math.round(addForm.minCareerYears)),
+          subJob: displaySubJob,
+          requiredSkills: [unitJob, detailJob],
+          responsibility: addForm.responsibility.trim() || `${detailJob} 신규 직무 대응`,
+          minCareerYears: baseMinCareerYears,
+          minCareerYearsByLevel: buildDefaultCareerLevelMap(baseMinCareerYears),
+          averageTechTfYears,
           count: Math.max(0, Math.round(addForm.count)),
           targetCount: Math.max(0, Math.round(addForm.count)),
           targetScore: 74,
           baselineActualScore: 62,
           isCustom: true,
-        },
+        } as TFScenarioCompetencyRow,
       ];
       if (selectedId) {
         setScenarioRowsByTemplate((prev) => ({
@@ -496,6 +635,26 @@ export default function TFRequestPanel({ templates, onSelect, onRecommend }: Pro
     });
     setAddForm(INITIAL_ADD_FORM);
     setFormError(null);
+  };
+
+  const handleMiddleJobChange = (middleJob: MiddleJob) => {
+    const nextSubJob = getDefaultSubJob(middleJob);
+    setAddForm((form) => ({
+      ...form,
+      middleJob,
+      subJob: nextSubJob,
+      unitJob: getDefaultUnitJob(nextSubJob),
+      detailJob: getDefaultDetailJob(nextSubJob),
+    }));
+  };
+
+  const handleSubJobChange = (subJob: string) => {
+    setAddForm((form) => ({
+      ...form,
+      subJob,
+      unitJob: getDefaultUnitJob(subJob),
+      detailJob: getDefaultDetailJob(subJob),
+    }));
   };
 
   const handleRecommend = () => {
@@ -567,7 +726,8 @@ export default function TFRequestPanel({ templates, onSelect, onRecommend }: Pro
                     <ScenarioBody>
                       <ScenarioTop>
                         <SubJobName>{row.subJob}</SubJobName>
-                        <MetaBadge>경력 {row.minCareerYears}년↑</MetaBadge>
+                        <MetaBadge>평균 경력 {row.minCareerYears}년</MetaBadge>
+                        <MetaBadge>평균 TF경험 {row.averageTechTfYears}년</MetaBadge>
                         <MetaBadge>권장 {row.targetCount}명</MetaBadge>
                         {row.isCustom && <CustomBadge>신규 직무</CustomBadge>}
                       </ScenarioTop>
@@ -642,11 +802,60 @@ export default function TFRequestPanel({ templates, onSelect, onRecommend }: Pro
 
             <FormGrid>
               <Field>
-                <span>중분류</span>
+                <span>중직무</span>
                 <Select<MiddleJob>
                   value={addForm.middleJob}
-                  onChange={(value) => setAddForm((form) => ({ ...form, middleJob: value }))}
+                  onChange={handleMiddleJobChange}
                   options={MIDDLE_ORDER.map((value) => ({ value, label: value }))}
+                />
+              </Field>
+
+              <Field>
+                <span>소직무</span>
+                <Select<string>
+                  value={addForm.subJob}
+                  onChange={handleSubJobChange}
+                  options={subJobOptions}
+                />
+              </Field>
+
+              <Field>
+                <span>단위직무</span>
+                <Select<string>
+                  value={addForm.unitJob}
+                  onChange={(value) => setAddForm((form) => ({ ...form, unitJob: value }))}
+                  options={unitJobOptions}
+                />
+              </Field>
+
+              <Field>
+                <span>세부직무</span>
+                <Select<string>
+                  value={addForm.detailJob}
+                  onChange={(value) => setAddForm((form) => ({ ...form, detailJob: value }))}
+                  options={detailJobOptions}
+                />
+              </Field>
+
+              <Field>
+                <span>평균 경력(년)</span>
+                <InputNumber
+                  min={0}
+                  value={addForm.minCareerYears}
+                  onChange={(value) => setAddForm((form) => ({ ...form, minCareerYears: value ?? 0 }))}
+                  style={{ width: '100%' }}
+                />
+              </Field>
+
+              <Field>
+                <span>평균 TF경험 햇수(년)</span>
+                <InputNumber
+                  min={0}
+                  value={addForm.averageTechTfYears}
+                  onChange={(value) =>
+                    setAddForm((form) => ({ ...form, averageTechTfYears: value ?? 0 }))
+                  }
+                  style={{ width: '100%' }}
                 />
               </Field>
 
@@ -668,36 +877,6 @@ export default function TFRequestPanel({ templates, onSelect, onRecommend }: Pro
                   />
                 </HeadcountControlRow>
               </Field>
-
-              <Field>
-                <span>신규 직무명</span>
-                <Input
-                  value={addForm.subJob}
-                  onChange={(event) => setAddForm((form) => ({ ...form, subJob: event.target.value }))}
-                  placeholder="예: Package Integration"
-                />
-              </Field>
-
-              <Field>
-                <span>최소 경력(년)</span>
-                <InputNumber
-                  min={0}
-                  value={addForm.minCareerYears}
-                  onChange={(value) => setAddForm((form) => ({ ...form, minCareerYears: value ?? 0 }))}
-                  style={{ width: '100%' }}
-                />
-              </Field>
-
-              <FullWidth>
-                <Field>
-                  <span>필수 스킬</span>
-                  <Input
-                    value={addForm.requiredSkills}
-                    onChange={(event) => setAddForm((form) => ({ ...form, requiredSkills: event.target.value }))}
-                    placeholder="쉼표로 구분해 입력"
-                  />
-                </Field>
-              </FullWidth>
 
               <FullWidth>
                 <Field>

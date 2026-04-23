@@ -37,7 +37,7 @@ const THead = styled.div`
   padding: 10px 16px;
   background: #f8fafc;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textMuted};
   text-transform: uppercase;
@@ -99,7 +99,7 @@ const CLTag = styled.span<{ $level: CareerLevel }>`
   border: 1px solid ${({ $level }) => CL_META[$level].border};
   background: ${({ $level }) => CL_META[$level].bg};
   color: ${({ $level }) => CL_META[$level].color};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 `;
 
@@ -110,13 +110,13 @@ const DominantBadge = styled.span<{ $level: CareerLevel }>`
   border: 1px solid ${({ $level }) => CL_META[$level].border};
   background: ${({ $level }) => CL_META[$level].bg};
   color: ${({ $level }) => CL_META[$level].color};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 `;
 
 const AvgCell = styled.span`
   justify-self: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
@@ -159,7 +159,7 @@ export default function CareerDistributionSection({ template }: { template: TFTe
           <TRow key={metric.subJob}>
             <SubJobCell>
               <MiddleJobBadge type={metric.middleJob} />
-              <strong style={{ fontSize: 13 }}>{metric.subJob}</strong>
+              <strong style={{ fontSize: 14 }}>{metric.subJob}</strong>
             </SubJobCell>
             <DistributionCell>
               <DistributionBar>

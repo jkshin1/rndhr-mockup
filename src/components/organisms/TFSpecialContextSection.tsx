@@ -41,19 +41,19 @@ const ContextTitle = styled.div`
   gap: 4px;
 
   strong {
-    font-size: 15px;
+    font-size: 16px;
     color: ${({ theme }) => theme.colors.textPrimary};
   }
 
   span {
-    font-size: 12px;
+    font-size: 13px;
     color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 
 const ContextText = styled.p`
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: ${({ theme }) => theme.colors.textSecondary};
   line-height: 1.7;
 
@@ -75,7 +75,7 @@ const THead = styled.div`
   padding: 10px 16px;
   background: #f8fafc;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textMuted};
   text-transform: uppercase;
@@ -190,7 +190,7 @@ export default function TFSpecialContextSection({ template }: { template: TFTemp
           <TRow key={item.subJob}>
             <JobCell>
               <MiddleJobBadge type={item.middleJob} />
-              <strong style={{ fontSize: 13 }}>{item.subJob}</strong>
+              <strong style={{ fontSize: 14 }}>{item.subJob}</strong>
             </JobCell>
             <CenterCell>+{item.platformAdjustmentYears.toFixed(1)}년</CenterCell>
             <CenterCell>+{item.nuddAdjustmentYears.toFixed(1)}년</CenterCell>

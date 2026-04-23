@@ -43,7 +43,7 @@ export default function OrgCompetencyChart({ placements, compact }: Props) {
   const categories = placements.map((p) => p.detailJobName);
   const targetScores = placements.map((p) => p.targetScore);
   const actualScores = placements.map((p) => p.avgPlacedScore);
-  const gaps = placements.map((p, i) => targetScores[i] - actualScores[i]);
+  const gaps = placements.map((_, i) => targetScores[i] - actualScores[i]);
   const hasGap = gaps.some((g) => g > 0);
   const height = compact ? 300 : 380;
 

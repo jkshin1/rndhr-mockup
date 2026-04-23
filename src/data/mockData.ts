@@ -88,6 +88,15 @@ export interface RequiredRole {
   description: string;
 }
 
+export type CareerLevel = 'CL2' | 'CL3' | 'CL4' | 'CL5';
+
+export interface CareerLevelRequirement {
+  CL2: number;
+  CL3: number;
+  CL4: number;
+  CL5: number;
+}
+
 export interface CompetencyScore {
   subJob: SubJob;
   score: number; // 0–100
@@ -98,6 +107,8 @@ export interface JobCompetency {
   requiredSkills: string[];
   responsibility: string;
   minCareerYears: number;
+  minCareerYearsByLevel?: CareerLevelRequirement;
+  averageTechTfYears?: number;
 }
 
 export type PlatformStage = 1 | 2 | 3;

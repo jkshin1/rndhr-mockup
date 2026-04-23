@@ -5,15 +5,10 @@ import SummaryCard from '../molecules/SummaryCard';
 import RiskChip from '../molecules/RiskChip';
 import OrgJobDistributionChart from './OrgJobDistributionChart';
 import OrgCompetencyChart from './OrgCompetencyChart';
-import OrgFunctionImpactSection from './OrgFunctionImpactSection';
+import OrgSourceTeamImpactSection from './OrgSourceTeamImpactSection';
 import type {
   OrgSetupSimResult,
-  OrgSimSummary,
   OrgPlacementResult,
-  OrgCandidate,
-  SourceTeamImpact,
-  DamDangRisk,
-  CompetencyGapItem,
   CareerDevelopment,
 } from '../../data/orgSetupSimulation';
 import type { OrgSetupResult } from '../../data/orgSetupData';
@@ -300,71 +295,11 @@ const SmallTag = styled.span`
   color: #3730a3;
 `;
 
-// ── 4. Source Team Risk ───────────────────────────────────────
-
-const RiskSummaryGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-`;
-
-const TeamTable = styled.div`
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
-  overflow: hidden;
-`;
-
-const TTHead = styled.div`
-  display: grid;
-  grid-template-columns: 120px 120px 80px 70px 70px 80px 90px 1fr;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 11px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.textMuted};
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-
-  span { text-align: center; }
-  span:first-child { text-align: left; }
-  span:last-child { text-align: left; }
-`;
-
-const TTRow = styled.div<{ $risk: RiskLevel }>`
-  display: grid;
-  grid-template-columns: 120px 120px 80px 70px 70px 80px 90px 1fr;
-  padding: 12px 14px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.borderLight};
-  border-left: 4px solid ${({ theme, $risk }) => theme.colors.risk[$risk].dot};
-  background: ${({ theme, $risk }) => theme.colors.risk[$risk].bg};
-  align-items: center;
-  font-size: 13px;
-
-  &:last-child { border-bottom: none; }
-`;
-
 const NumCell = styled.span`
   text-align: center;
   font-size: 13px;
   font-weight: 500;
   display: block;
-`;
-
-const RolesCell = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-`;
-
-const RoleTag = styled.span`
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 3px;
-  background: #f1f5f9;
-  color: #475569;
-  font-weight: 500;
 `;
 
 // ── 5. DamDang Risk ──────────────────────────────────────────
@@ -998,10 +933,6 @@ export default function OrgSetupResultPanel({ result, setupInput, onReset }: Pro
   const [hireDevOpen, setHireDevOpen] = useState(false);
   const [careerOpen, setCareerOpen] = useState(false);
 
-  const highTeams = result.sourceTeamImpacts.filter((t) => t.riskLevel === 'high').length;
-  const mediumTeams = result.sourceTeamImpacts.filter((t) => t.riskLevel === 'medium').length;
-  const lowTeams = result.sourceTeamImpacts.filter((t) => t.riskLevel === 'low').length;
-
   // Pre-compute summary stats for collapsed states
   const totalHiringCount = result.hiringRecommendations.reduce((s, r) => s + r.count, 0);
   const hiringJobCount = result.hiringRecommendations.length;
@@ -1094,44 +1025,11 @@ export default function OrgSetupResultPanel({ result, setupInput, onReset }: Pro
       {/* ── 4. Source Team Risk ── */}
       <Section>
         <SectionTitle>이전 조직 Risk 분석</SectionTitle>
-        <SectionSub>인력 차출에 따른 기존 팀 운영 리스크 점검</SectionSub>
-        <SectionBody>
-          <RiskSummaryGrid>
-            <SummaryCard label="고위험 팀" value={`${highTeams}개`} color="#ef4444" />
-            <SummaryCard label="중위험 팀" value={`${mediumTeams}개`} color="#f59e0b" />
-            <SummaryCard label="저위험 팀" value={`${lowTeams}개`} color="#22c55e" />
-          </RiskSummaryGrid>
-          <TeamTable>
-            <TTHead>
-              <span>팀명</span>
-              <span>담당</span>
-              <span>현재 인원</span>
-              <span>차출</span>
-              <span>잔여</span>
-              <span>최소필요</span>
-              <span>위험도</span>
-              <span>영향 직무</span>
-            </TTHead>
-            {result.sourceTeamImpacts.map((t) => (
-              <TTRow key={`${t.teamName}-${t.damDangName}`} $risk={t.riskLevel}>
-                <span style={{ fontWeight: 600 }}>{t.teamName}</span>
-                <span style={{ textAlign: 'center', fontSize: 12 }}>{t.damDangName}</span>
-                <NumCell>{t.currentHeadcount}명</NumCell>
-                <NumCell style={{ color: '#be123c', fontWeight: 700 }}>-{t.pulledCount}명</NumCell>
-                <NumCell>{t.remainingCount}명</NumCell>
-                <NumCell>{t.minimumRequired}명</NumCell>
-                <span style={{ display: 'flex', justifyContent: 'center' }}>
-                  <RiskChip level={t.riskLevel} />
-                </span>
-                <RolesCell>
-                  {t.affectedRoles.map((r) => (
-                    <RoleTag key={r}>{r}</RoleTag>
-                  ))}
-                </RolesCell>
-              </TTRow>
-            ))}
-          </TeamTable>
-        </SectionBody>
+        <SectionSub>기존 팀별 잔여 인력과 최소 운영 기준을 Function 조직 영향 분석 형태의 그래프로 점검</SectionSub>
+        <OrgSourceTeamImpactSection
+          sourceTeamImpacts={result.sourceTeamImpacts}
+          middleJob={setupInput.middleJob}
+        />
       </Section>
 
       {/* ── 5. DamDang Risk ── */}
@@ -1174,13 +1072,6 @@ export default function OrgSetupResultPanel({ result, setupInput, onReset }: Pro
             </DamDangCard>
           ))}
         </SectionBody>
-      </Section>
-
-      {/* ── 5-1. Function 조직 영향 분석 ── */}
-      <Section>
-        <SectionTitle>Function 조직 영향 분석</SectionTitle>
-        <SectionSub>신설 조직 인력 차출에 따른 Function 담당 조직 잔여 인력 및 최소 운영 기준 점검</SectionSub>
-        <OrgFunctionImpactSection damDangRisks={result.damDangRisks} middleJob={setupInput.middleJob} />
       </Section>
 
       {/* ── 6. Competency Gap (역량 Gap 분석 — 채용·육성 위) ── */}

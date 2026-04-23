@@ -1,6 +1,7 @@
 import {
   employees,
   functionOrgBaseline,
+  type CareerLevelRequirement,
   getPlatformStageLabel,
   getMiddleJobBySubJob,
   getOrderedTfSubJobs,
@@ -8,6 +9,7 @@ import {
   type Employee,
   type FunctionMiddle,
   type FunctionRiskLevel,
+  type JobCompetency,
   type MiddleJob,
   type PlatformStage,
   type TFTemplate,
@@ -15,6 +17,7 @@ import {
 
 const CURRENT_YEAR = 2026;
 
+const CL_LEVELS: Array<keyof CareerLevelRequirement> = ['CL2', 'CL3', 'CL4', 'CL5'];
 type CareerRiskLevel = 'high' | 'medium' | 'low';
 type CareerAction = '경력직 보강' | 'Tech TF 경험자 우선 차출' | '리더 경력 보강' | '현 수준 유지';
 type CareerRoleTitle = '팀원' | 'Module장' | 'Part장' | '팀장';
@@ -62,6 +65,7 @@ export interface TFCareerMetric {
   currentCount: number;
   targetCount: number;
   recommendedMinCareerYears: number;
+  recommendedAverageTechTfYears: number;
   requiredAvgCareerYears: number;
   actualAvgCareerYears: number;
   baseAvgCareerYears: number;
@@ -502,9 +506,53 @@ function buildSubJobCareerSamples(template: TFTemplate): SubJobCareerSample[] {
   });
 }
 
+type CompetencyWithCl = Pick<JobCompetency, 'minCareerYears'> & {
+  minCareerYearsByLevel?: CareerLevelRequirement;
+};
+
+function pickClCareerTargets(competency?: CompetencyWithCl) {
+  const minCareerYears = competency?.minCareerYears ?? 4;
+
+  return {
+    CL2: clamp(competency?.minCareerYearsByLevel?.CL2 ?? minCareerYears, 0, 40),
+    CL3: clamp(competency?.minCareerYearsByLevel?.CL3 ?? minCareerYears, 0, 40),
+    CL4: clamp(competency?.minCareerYearsByLevel?.CL4 ?? minCareerYears, 0, 40),
+    CL5: clamp(competency?.minCareerYearsByLevel?.CL5 ?? minCareerYears, 0, 40),
+  };
+}
+
+function getClWeightedRecommendedCareerYears(
+  competency: CompetencyWithCl | undefined,
+  sample: EmployeeCareerProfile[]
+): number {
+  const fallback = competency?.minCareerYears ?? 4;
+  const clTargets = pickClCareerTargets(competency);
+  const hasSample = sample.length > 0;
+
+  if (!hasSample) {
+    return round1(average(CL_LEVELS.map((level) => clTargets[level])));
+  }
+
+  const clCounts = createEmptyClDistribution();
+  sample.forEach((profile) => {
+    clCounts[profile.careerLevel] += 1;
+  });
+
+  const totalCount = sample.length;
+  const weighted = CL_LEVELS.reduce(
+    (sum, level) => sum + clTargets[level] * clCounts[level],
+    0
+  );
+
+  if (totalCount === 0) return round1(fallback);
+  if (weighted === 0) return round1(fallback);
+
+  return round1(weighted / totalCount);
+}
+
 export function analyzeTemplateCareer(template: TFTemplate): TFCareerMetric[] {
   return buildSubJobCareerSamples(template).map((item) => {
-    const { subJob, middleJob, currentCount, targetCount, recommendedMinCareerYears, sample } = item;
+    const { subJob, middleJob, currentCount, targetCount, sample } = item;
 
     const sampleSize = sample.length;
     const baseAvgCareerYears = round1(average(sample.map((profile) => profile.employee.careerYears)));
@@ -525,12 +573,26 @@ export function analyzeTemplateCareer(template: TFTemplate): TFCareerMetric[] {
       targetCount
     );
 
+    const clWeightedRecommendedMinCareerYears = getClWeightedRecommendedCareerYears(
+      template.jobCompetencies.find((entry) => entry.subJob === subJob),
+      sample
+    );
+    const sampleAvgTechTfYears = round1(
+      average(sample.map((person) => person.techTfYears))
+    );
+    const requiredTechTfRateBase = getRequiredTechTfRate(targetCount);
+    const requiredTechTfYearsPremium = Math.min(
+      0.12,
+      Math.max(0, (sampleAvgTechTfYears - 1) * 0.015)
+    );
     const requiredAvgCareerYears = round1(
-      getRequiredAvgCareerYears(recommendedMinCareerYears, targetCount) +
+      getRequiredAvgCareerYears(clWeightedRecommendedMinCareerYears, targetCount) +
       specialAdjustment.totalAdjustmentYears
     );
     const requiredTechTfExperiencedRate = clamp(
-      getRequiredTechTfRate(targetCount) + specialAdjustment.additionalTechTfRate,
+      requiredTechTfRateBase +
+        specialAdjustment.additionalTechTfRate +
+        requiredTechTfYearsPremium,
       0.2,
       0.9
     );
@@ -553,7 +615,8 @@ export function analyzeTemplateCareer(template: TFTemplate): TFCareerMetric[] {
       middleJob,
       currentCount,
       targetCount,
-      recommendedMinCareerYears,
+      recommendedMinCareerYears: clWeightedRecommendedMinCareerYears,
+      recommendedAverageTechTfYears: sampleAvgTechTfYears,
       requiredAvgCareerYears,
       actualAvgCareerYears,
       baseAvgCareerYears,

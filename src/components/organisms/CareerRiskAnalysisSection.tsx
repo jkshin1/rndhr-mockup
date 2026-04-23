@@ -39,7 +39,7 @@ const THead = styled.div`
   padding: 10px 16px;
   background: #f8fafc;
   border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: ${({ theme }) => theme.colors.textMuted};
   text-transform: uppercase;
@@ -77,7 +77,7 @@ const SubJobCell = styled.div`
 
 const NumCell = styled.span`
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   display: block;
 `;
@@ -85,7 +85,7 @@ const NumCell = styled.span`
 const GapCell = styled.span<{ $neg: boolean }>`
   text-align: center;
   display: block;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: ${({ $neg, theme }) => ($neg ? theme.colors.risk.high.text : theme.colors.risk.low.text)};
 `;
@@ -103,7 +103,7 @@ const LeaderTag = styled.span`
   background: #fff;
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.textSecondary};
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 `;
 
@@ -119,7 +119,7 @@ const ActionTag = styled.span<{ $action: CareerAction }>`
   border: 1px solid ${({ $action }) => ACTION_STYLES[$action].border};
   background: ${({ $action }) => ACTION_STYLES[$action].bg};
   color: ${({ $action }) => ACTION_STYLES[$action].color};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 `;
 
@@ -164,7 +164,7 @@ const ActionCardTitle = styled.div<{ $variant: 'hire' | 'tf' | 'leader' }>`
 `;
 
 const ActionCardDesc = styled.div`
-  font-size: 13px;
+  font-size: 14px;
   color: #475569;
 
   strong {
@@ -182,7 +182,7 @@ const TagList = styled.div`
 const JobTag = styled.span<{ $variant: 'hire' | 'tf' | 'leader' }>`
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   background: #fff;
   border: 1px solid
@@ -230,7 +230,7 @@ export default function CareerRiskAnalysisSection({ template }: { template: TFTe
           <TRow key={item.subJob} $risk={item.riskLevel}>
             <SubJobCell>
               <MiddleJobBadge type={item.middleJob} />
-              <strong style={{ fontSize: 13 }}>{item.subJob}</strong>
+              <strong style={{ fontSize: 14 }}>{item.subJob}</strong>
             </SubJobCell>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <RiskChip level={item.riskLevel} />
